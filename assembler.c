@@ -3,7 +3,7 @@
 
 int main(int c, int *argv[])
 {
-
+    FILE *fp;
     /* In case file names werent provided via command run */
     if(c <= 1)
     {
