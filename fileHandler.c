@@ -1,4 +1,5 @@
                     /*** IN THIS FILE WE WILL HAVE ALL THE FUNCTION RELATED TO DEALING WITH FILES
+          
                                  CREATING FILES, FETCHING LINES FROM FILES ETC               ***/
 
 #include "fileHandler.h"
@@ -16,11 +17,6 @@ FILE *fetchFile(char *fileName, char *fileMode)
     }
     return fp;
 }
-
-
-
-
-
 
 
 
