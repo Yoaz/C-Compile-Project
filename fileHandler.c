@@ -1,5 +1,4 @@
                     /*** IN THIS FILE WE WILL HAVE ALL THE FUNCTION RELATED TO DEALING WITH FILES
-          
                                  CREATING FILES, FETCHING LINES FROM FILES ETC               ***/
 
 #include "fileHandler.h"
@@ -25,14 +24,8 @@ void fetchLine(FILE *fd, char **line)
 {
    int ch, size=1, len=0, inString = false, firstQuote = false;
 
-    /* Assign 'line' with memory big enough for 1 char and end string char '\0' */
-    (*line)=(char *)realloc(NULL,sizeof(char)*size);
-    if(!(*line))
-    {
-        fprintf(stderr, "Couldn't allocate memory!");
-        exit(0);
-    }
-   
+    /* Assign 'line' with safe memory allocation (malloc) big enough for 1 char and end string char '\0' */
+    (*line)=(char *)safeAlloc(sMalloc,sizeof(char)*size);
       
     /* as long as not end of file */
     while((ch=fgetc(fd)) != EOF)
@@ -84,7 +77,8 @@ void fetchLine(FILE *fd, char **line)
 
         if(len==size)   /* if we need more memory allocation */
         {
-            (*line) = realloc((*line),sizeof(char)*(size+=1));
+            /* assign line with a new size using safeAlloc (REALLOC) */
+            (*line) = safeAlloc(sRealloc,(*line),sizeof(char)*(size+=1));
             if(!(*line))
             {
                 fprintf(stderr, "Couldn't allocate memory!");

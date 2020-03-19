@@ -5,9 +5,9 @@
 
 int IC;
 int DC;
-int numLine;
+int numRow;
 int numColumn;
-int numErrors;
+int numOfErrors;
 
 /* Matrix to hold all fetched file names */
 char **filesNames;

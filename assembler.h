@@ -1,5 +1,7 @@
 #include <stdio.h>
-#include "data.c"
+#include "fileHandler.h" /* for use of file defines (ex. READ_ONLY) */
+
+extern **filesNames;
 
 
 

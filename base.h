@@ -1,6 +1,5 @@
 #include <stdio.h>
-
-
+#include "data.c"
 
 
 

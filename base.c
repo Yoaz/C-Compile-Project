@@ -32,7 +32,7 @@ int firstRound(FILE *fp)
         while(*tmpLine != STRING_END)
         {
             c = *(tmpLine++); /* assing c with each line char */ 
-            numColumn++; /* add +1 to global column counter
+            numColumn++; /* add +1 to global column counter */
             /* already made sure the line isn't empty nor comment ';' nor undefined via relevantToCheck(char *) */
             if(c == COLON) /* since we check first token, must be label or undefined */
             {
