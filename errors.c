@@ -8,8 +8,8 @@
 /* 
 * Generic Safe Memory Allocation: 
 * if Malloc -> one more arg = size_t bytes required, besides must arg
-* If Calloc -> two more arg = size_t length and size_t times of length required, besides must arg
-* if realloc -> two more arg = void *pointer and size_t bytes required, besides must arg 
+* If Calloc -> two more arg = size_t length and size_t = times of length required, besides must arg
+* if realloc -> two more arg = void *pointer and size_t = bytes required, besides must arg 
 */
 void *safeAlloc(alloc_t allocation_type, ...)
 {
@@ -24,9 +24,9 @@ void *safeAlloc(alloc_t allocation_type, ...)
              /* Malloc requires just 1 argc, size of bytes */
             temp = malloc(va_arg(ap, size_t));
             break;
-        case:(sCalloc):
+        case(sCalloc):
             /* Calloc requires 2 args, length, size_t size */
-            temp = calloc(va_arg(ap, size_t), va_arg(ap, size_t)) 
+            temp = calloc(va_arg(ap, size_t), va_arg(ap, size_t));
             break;
         case(sRealloc):
             /* Calloc requires 2 args, void *ptr, new size */

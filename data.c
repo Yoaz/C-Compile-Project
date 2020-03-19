@@ -9,6 +9,9 @@ int numLine;
 int numColumn;
 int numErrors;
 
+/* Matrix to hold all fetched file names */
+char **filesNames;
+
 
 struct insLine{
     char *raw;

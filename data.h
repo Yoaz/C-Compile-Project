@@ -19,7 +19,10 @@
 #define NUMBER_OF_LABELS 4
 #define OPCODES 15 /* added */
 
+/* define boolean variable */
 typedef enum boolean{false, true} boolean;
+
+/* system's available registers */
 enum registers{r0, r1, r2, r3, r4, r5, r6, r7};
 
 
