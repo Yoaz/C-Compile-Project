@@ -1,33 +1,31 @@
 #include "assembler.h"
 
 
-int main(int c, int *argv[])
-{
-    FILE *fp;
-    char *fileName;
-
+int main(int argc, char *argv[])
+{   
+    successFiles = 0; /* reset global success files var one time only every program run session */
+   
     /* In case file names werent provided via command run */
-    if(c <= 1)
-    {
-        fprintf(stderr, "File Names Must Be Provided!");
-        exit(1);
-    }
-
-    while(--c)
+    if(argc <= 1)
+        printError(NO_FILES); /* Will print NO_FILES err and exit program since it is a fatal error */
+    
+    /* loop through main argv's after name of program */
+    while(--argc)
     {   
-        strcpy(fileName, (*filesNames)[c - (c-1)]); /* insert the file name */
-        strcat(fileName,".as"); /* add the file suffix */
-        
-        /* fetching files */
-        fetchFile(*++argv, READ_ONLY);
-
-        if(firstRound(fp))
-            secondRound(fp); /* TODO: add if(error) -> print errors, don't run secondRound */
+        resetGlobals(); /* for every new file round, reset all globals */
+        initiate(*++argv);
+        if(numOfErrors)
+            printError(ERRORS_IN_FILE, numOfErrors, *argv);
     }
-    return 0; /* TODO: just a place holder for now, decide later */
+
+    /* if successFiles (files provided via cmd line who went through the whole proccess with no errors and 
+    * translated to mechine code seccefully) is 0, print error "no files provided found" */
+    if(!successFiles)
+        printError(WRONG_FILES);
+
+    return 0;
 }
     
-
 
 
 

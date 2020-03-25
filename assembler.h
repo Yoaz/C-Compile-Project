@@ -1,17 +1,7 @@
 #include <stdio.h>
-#include "fileHandler.h" /* for use of file defines (ex. READ_ONLY) */
 
-extern **filesNames;
+#include "errors.h" /* for errors enum etc */
 
+extern successFiles; 
+extern numOfErrors;
 
-
-
-
-
-
-/*                                                                                                           *\
-********************************************* FUNCTION PROTOTYPE **********************************************
-\*                                                                                                           */
-
-/* checks if there is a need to parse a given line */
-boolean relevantToParse(char *);

@@ -1,8 +1,37 @@
+#ifndef ERRORS_H
+#define ERRORS_H
+
 #include <stdio.h>
 #include <stdarg.h> /* for va_list, va_args_ etc used in errors.c */
 
-#include "data.h" /* for all unique dprogram definations */
+#include "globals.h" /* for all unique program definitions */
 
 
-extern numRow;
-extern numColumn;
+
+extern int numRow;
+extern int numColumn;
+
+
+/* enum for generic safe memerory allocation functions */
+typedef enum{
+    sMalloc,
+    sCalloc,
+    sRealloc
+}alloc_t;
+
+/* program errors shortcuts */
+typedef enum{NO_FILES=1, FAILED_OPEN, ERRORS_IN_FILE, WRONG_FILES, MISSING_DR_OP, LABEL_NUMERIC_START, LABEL_LENGTH, ILLEGAL_LABEL_CHARS, LABEL_DEFINED, SAVED_WORD, DIR_NO_FOUND,
+             DATA_INVALID, STR_INVALID, NOT_WHOLE, INS_NO_FOUND, WRONG_NUM_PARAM, INVALID_PARAM, LINE_LENGTH,
+             INVALID_LETTER, UNDEF_PARAM, UPPER_CASE} errorList;
+
+
+
+/*                                                                                                           *\
+********************************************* FUNCTION PROTOTYPE **********************************************
+\*                                                                                                           */
+
+void printError(errorList, ...);
+
+void *safeAlloc(alloc_t, ...);
+
+#endif 

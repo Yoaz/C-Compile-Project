@@ -1,30 +1,28 @@
                     /*** IN THIS FILE WE WILL HAVE ALL THE FUNCTION RELATED TO DEALING WITH FILES
                                  CREATING FILES, FETCHING LINES FROM FILES ETC               ***/
 
-#include "fileHandler.h"
+#include "file.h"
 
 
-/* The function read char by char from file and assign to line when \n occur */
+/* function will fetch the file with the fileName provided and open with mode based on file mode provided */
 FILE *fetchFile(char *fileName, char *fileMode)
 {
     FILE *fp;
 
     if(!(fp = fopen(fileName, fileMode) )) /* Check success of file open */
-    {
-        fprintf(stderr, "Failed Loading File or File Not Exist"); /* TODO: add to internal error buffer */
-        return NULL;
-    }
+        return NULL; /* no success in opening the file, return NULL to FILE * pointer */
+
     return fp;
 }
 
-
-
-/* The function read char by char from file and assign to line when \n occur */
+/* the function read char by char from file and assign to line when \n occur
+* this funcion will 'on the fly' avoid extra white chars from input, and replace with since space char, as long
+as input isnt part of .string " " string, for ex: (SPACE X 4)\t AB:\t\t\t .data -> will turn into: AB: .data with one
+* SPACE char in between 2 words that originally inputted with white tabs in between */
 void fetchLine(FILE *fd, char **line)
 {
    int ch, size=1, len=0, inString = false, firstQuote = false;
 
-    /* Assign 'line' with safe memory allocation (malloc) big enough for 1 char and end string char '\0' */
     (*line)=(char *)safeAlloc(sMalloc,sizeof(char)*size);
       
     /* as long as not end of file */
@@ -44,6 +42,7 @@ void fetchLine(FILE *fd, char **line)
             }
         }
 
+        /* TODO: check if possible to deal with commas already while fetching line */
         if( (ch == (char)COMMA) && !inString )
         {
             
@@ -78,12 +77,7 @@ void fetchLine(FILE *fd, char **line)
         if(len==size)   /* if we need more memory allocation */
         {
             /* assign line with a new size using safeAlloc (REALLOC) */
-            (*line) = safeAlloc(sRealloc,(*line),sizeof(char)*(size+=1));
-            if(!(*line))
-            {
-                fprintf(stderr, "Couldn't allocate memory!");
-                exit(1);
-            }
+            (*line) = (char *)safeAlloc(sRealloc,(*line),sizeof(char)*(size+=1));
         }
    }
 }

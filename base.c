@@ -5,73 +5,96 @@
 
 
 
+/* accpets *argv[] (file names) from cmd input and initiate assmebler */
+void initiate(char *fileName){
+    FILE *fp;
+    
+    strcat(fileName,".as"); /* add the file suffix */
+    
+    /* fetching files */
+    if(!(fp = fopen(fileName, READ_ONLY))){
+        printError(FAILED_OPEN, fileName); /* Will print FAILED_OPEN err */ 
+        fclose(fp);
+        return; /* name of file not found, move on to next file from argv[] if exist */
+    }
+
+    /* Debug */
+    printf("Open file: \"%s\"\n", fileName); 
+
+    /* Runs the first pass on the source file */
+	if(firstRound(fp)) /* first round was successful */
+	{
+        /* updateSymbolTableAddrss(fileName); /*TODO: build func to update symbol table after firstRound success */
+        if(secondRound(fp)) /* second round was success */
+        { 
+            successFiles++; /* file went through the full parsing to meching code process with no errors, add to success files global counter */
+            fclose(fp);
+            return; /* next file if exist */
+        }
+    }
+
+    /* default: second or first round had issues */
+    fclose(fp);
+    return; /* do not update symbol table nor go for second round on file */
+}
+
+
+
 /* first round through file content to examine the content */
-int firstRound(FILE *fp)
+boolean firstRound(FILE *fp)
 {
-    char *line, *tmpLine, *token;
-    IC=0, DC=0, numErrors = 0, numColumn = 0; /* reset global vars */
-    int c;
-    boolean lblFlag = false;
+    char *line, *tmpLine;
+    IC=0, DC=0, numOfErrors = 0, numColumn = 0; /* reset global vars */
     
     /* As long as not end of file keep fetch lines from file */
     while(!feof(fp))
     {
+        /* fetch line from file and save to local line var */
         fetchLine(fp, &line);
-
-        if(!relevantToParse(line)) /* passing current line to check if relevant to parse (maybe empty, comment etc) */
+        
+        /* Debug */
+        printf("\n%s-> size of line: %d\n", line, strlen(line));
+        
+        if(!relevantToParse(line)){ /* if line not relevant to parse (maybe undefined, empty, comment etc), skip */
+            free(line);
             continue;
-
+        }
+        
         /* time to parse which type of line this is */
-        strcpy(tmpLine, line); /* To preserve original line raw */
-
-        /* start reading first token from line with space delim, as we are fetching raw line from file using 
-        * fetchLine(), but, while 'avoiding unecesery legal input extra white tabs' and make sure only one space is
-        * preserved between every two parts of string that were originally typed with one or more white tabs */
-        token = strtok(tmpLine, SPACE); 
-
-        while(*tmpLine != STRING_END)
-        {
-            c = *(tmpLine++); /* assing c with each line char */ 
-            numColumn++; /* add +1 to global column counter */
-            /* already made sure the line isn't empty nor comment ';' nor undefined via relevantToCheck(char *) */
-            if(c == COLON) /* since we check first token, must be label or undefined */
-            {
-                
-                token = strtok(line, COLON); /* cuts the label from the string */
-                fetchLable(token); /* checks if the label is correct */
-                lblFlag = true;
-
-            }
-            if(c == DOT) /* instruction */
-            {
-                if(lblFlag)
-                {
-                    parseInstruction(line+ind);
-                    lblFlag = 0;
-                }
-                else
-                    parseDirective(line+ind);
-                return;
-            }
-        }  
+        if(!splitLine(line)) /* compute which RELEVANT line this is and split accordingly and assign to global splited line object */
+        {   
+            free(line);    
+            continue; /* if error occur during splitLine() then errors in line */
+        }
+        
         free(line);  /* free alocated memory for line */
     }
 
-return 0;    
+    /* if found errors in current file, first round failed, return false */
+    if(numOfErrors)
+        return false;
+
+/* first round success */
+return true;    
 }
 
+
 /* second round looping throug the file content to complete necesery parsing */
-void secondPass(char *fileName, FILE *fp)
+boolean secondRound(FILE *fp)
 {
 
    IC = 0;
    rewind(fp); /* Setting FILE* pointer back to begining of file */
-
    
+   return false;
+}
 
 
-
-
-   
-   
+/* reset all globals */
+void resetGlobals(){
+    IC = 0;
+    DC = 0;
+    numColumn = 0;
+    numRow = 0;
+    numOfErrors = 0;
 }

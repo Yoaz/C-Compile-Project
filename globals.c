@@ -1,28 +1,47 @@
                     /*** THIS IS THE GLOBALS FILE, HERE WE WILL HOLD ALL PROGRAM GLOBALS
                                            VARS AND STRUCTCS DECLARATION            ***/
 
-#include "data.h"
+#ifndef GLOBALS_C
+#define GLOBALS_C
+
+#include "globals.h"
+
 
 int IC;
 int DC;
 int numRow;
 int numColumn;
 int numOfErrors;
-
-/* Matrix to hold all fetched file names */
-char **filesNames;
+int successFiles; /* will count how many files went through the full assembler proccess with no errors */
 
 
-struct insLine{
-    char *raw;
-    char *
-}
 
+typedef struct{
 
-struct dirLine{
-    char *raw;
+}dirLine;
 
-}
+typedef struct{
+    
+}args;
+
+/* ARE */
+typedef enum
+{
+	A_ABSOLUTE,
+	E_EXTERNAL,
+	R_RELOCATABLE
+} ARE;
+
+/* Types of instruction command line arguments */
+typedef enum
+{
+	NULL_METHOD = -1,
+	IMMEDIATE,
+	DIRECT,
+	DIRECT_REG,
+	REF_REG,
+	ADD_METHOD_COUNT
+} AddMethod;
 
 /* define struct to hold opcodes and their binary value */
 struct operations{
@@ -34,3 +53,5 @@ struct operations{
     {"dec", 1000}, {"jmp", 1001}, {"bne", 1010}, {"red", 1011},
     {"prn", 1100}, {"jsr", 1101}, {"rts", 1110}, {"stop", 1111}
 };
+
+#endif

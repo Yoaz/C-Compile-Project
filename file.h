@@ -1,5 +1,7 @@
 #include <stdio.h>
-#include "data.h"
+
+#include "globals.h"
+#include "errors.h"
 
 
 
