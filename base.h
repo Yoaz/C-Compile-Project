@@ -4,6 +4,7 @@
 #include "errors.h"
 #include "file.h" /* for use of file defines (ex. READ_ONLY) */
 #include "parse.h"
+#include "structs.h" /* for use of printLblTable() etc */
 
 extern successFiles;
 extern numOfErrors;

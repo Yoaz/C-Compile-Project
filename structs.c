@@ -13,24 +13,24 @@
 \*                                                                                                           */
 
 
-/* this function checks the declared label */
+/* this function checks the declared label *
 void labelCheck(char *label)
 {
             
-   strcpy(pSpLine -> label, ""); /* reset the label */
-   checkSyntax(label); /* checks the syntax of the current label */
-   Availability(label); /* checks if the label is one of the saved words */
-   if(checkExist(label) == -1) /* checks the existance of current label */
-   { /* -1 if there is existance */
-         error++; /* increase number of errors */
-         strcat(errorBuff, "The label \""); /* prepare the error out-put */
+   strcpy(pSpLine -> label, ""); /* reset the label *
+   checkSyntax(label); /* checks the syntax of the current label *
+   Availability(label); /* checks if the label is one of the saved words *
+   if(checkExist(label) == -1) /* checks the existance of current label *
+   { /* -1 if there is existance *
+         error++; /* increase number of errors *
+         strcat(errorBuff, "The label \""); /* prepare the error out-put *
          strcat(errorBuff, label);
          strcat(errorBuff, "\" is already exist\n");
-         errorsOut(); /* if there is an error print it */
+         errorsOut(); /* if there is an error print it *
    }
    labelFlag = 1;
 }
-
+*/
 
 
 /* Add a new symbol to the symbol-table from global splitted line var (pointer) fetched data */
@@ -66,7 +66,7 @@ void addLabel()
 boolean findLabel(char *name)
 {
 	labelNode *p;
-   
+
 	for (p = lblHead; p; p = p->next)
 		if (!strcmp(p -> name, name))
 			return true;
@@ -75,31 +75,32 @@ boolean findLabel(char *name)
 }
 
 /* Updates the symbol table addresses. */
-void updateSymbolTabelAddresses(fileHandler fileH, int inc)
+void updateLabelTable(FILE *fp, int inc)
 {
-	slNode ptr;
-	for (ptr = fileH->symbol; ptr; ptr = ptr->next)
+	labelNode *p;
+
+	for (p = lblHead; p; p = p->next)
 	{
-		if (ptr->type == CODE)
-			ptr->value += inc;
-		else if (ptr->type == DATA)
-			ptr->value += fileH->IC + inc;
+		if (p -> type == CODE)
+			p -> value += inc;
+		else if (p -> type == DATA)
+			p-> value += IC + inc;
 	}
 }
 
 /* Returns the given symbol type. */
-symbolType getSymbolType(slNode symbol)
+labelType getLabelType(labelNode *label)
 {
-	if(symbol)
-		return symbol->type;
+	if(label)
+		return label -> type;
 	return UNDEFINED_SYMBOL;
 }
 
 /* Returns the given symbol value.  */
-long getSymbolVal(slNode symbol)
+long getSymbolVal(labelNode *label)
 {
-	if (symbol)
-		return symbol->value;
+	if (label)
+		return label -> value;
 	return 0;
 }
 
@@ -124,12 +125,12 @@ void freeLblTable()
 
 
 /* Debugging */
-void printSymbolTabel()
+void printLblTabel()
 {
 	labelNode *p;
 
 	printf("\n\n\t====== Symbol-Table ====== \n\n");
-	for (p = lblHead; p; ptr = p->next)
-		printf("Name = %s \tType = %d\t Value = %li\n", ptr->name, ptr->type, ptr->value);
+	for (p = lblHead; p; p = p->next)
+		printf("Name = %s \tType = %d\t Value = %li\n", p->name, p->type); /* TODO: Add p -> value */
 	printf("\n\t=== End Of Symbol-Table === \n\n\n");
 }

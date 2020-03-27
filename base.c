@@ -24,7 +24,7 @@ void initiate(char *fileName){
     /* Runs the first pass on the source file */
 	if(firstRound(fp)) /* first round was successful */
 	{
-        /* updateSymbolTableAddrss(fileName); /*TODO: build func to update symbol table after firstRound success */
+        /* updateLabelTable(fileName); /*TODO: build func to update symbol table after firstRound success */
         if(secondRound(fp)) /* second round was success */
         { 
             successFiles++; /* file went through the full parsing to meching code process with no errors, add to success files global counter */
@@ -34,7 +34,7 @@ void initiate(char *fileName){
     }
 
     /* default: second or first round had issues */
-    freeLblList(); /*TODO: perhaps to merge one func freeAll to free all databases at end each file loop */
+    freeLblTable(); /*TODO: perhaps to merge one func freeAll to free all databases at end each file loop */
     fclose(fp);
     return; /* do not update symbol table nor go for second round on file */
 }

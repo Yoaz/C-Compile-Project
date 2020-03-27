@@ -57,7 +57,7 @@ typedef enum
 	DATA,
 	MACRO,
 	EXTERNAL
-} symbolType;
+} labelType;
 
 /* split line object */
 typedef struct{

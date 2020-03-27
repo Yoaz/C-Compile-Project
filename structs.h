@@ -22,7 +22,7 @@ extern spLine *pSpLine;
 typedef struct labelNode{
    char name; /* label name */
    char type[TYPE_SIZE]; /* label type */
-   int val; /* value of DC */
+   int value; /* value of DC */
    struct labelNode *next; /* pointer to the next label */
    
 }labelNode;
@@ -39,15 +39,14 @@ labelNode *lblLast;
 /* functions prototype */
 void labelCheck(char*);
 void checkSyntax(char*);
-void Availability(char*);
 int checkExist(char*);
-void creatLableTable(char*,int);
+void updateLabelTable(FILE *, int);
 void addLabel();
-void insertData(labelNode*, char*);
 void insertLabel(char*);
-void printlblTable(void);
-void instuctionType(char*);
-void freeAll(void);
-int typeCheck(char*);
+void printLblTabel();
+labelType getLabelType(labelNode *);
+long getSymbolVal(labelNode *);
+void freeLblTable();
+boolean findLabel(char *);
 
 #endif
