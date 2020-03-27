@@ -13,35 +13,9 @@ int numRow;
 int numColumn;
 int numOfErrors;
 int successFiles; /* will count how many files went through the full assembler proccess with no errors */
+spLine *pSpLine; /* global splitted line variable */
 
 
-
-typedef struct{
-
-}dirLine;
-
-typedef struct{
-    
-}args;
-
-/* ARE */
-typedef enum
-{
-	A_ABSOLUTE,
-	E_EXTERNAL,
-	R_RELOCATABLE
-} ARE;
-
-/* Types of instruction command line arguments */
-typedef enum
-{
-	NULL_METHOD = -1,
-	IMMEDIATE,
-	DIRECT,
-	DIRECT_REG,
-	REF_REG,
-	ADD_METHOD_COUNT
-} AddMethod;
 
 /* define struct to hold opcodes and their binary value */
 struct operations{

@@ -33,156 +33,103 @@ void labelCheck(char *label)
 
 
 
-/* The function checks in the label-table if there an existance label */
-int checkExist(char *label)
+/* Add a new symbol to the symbol-table from global splitted line var (pointer) fetched data */
+void addLabel()
 {
-   int i;
-   labelNode *curr; /* row */
-   for(i=0;i<4;i++)
-   {
-      if(labelTable[i] == NULL) /* table is not set */
-         return 1; /* no table */
-      curr = labelTable[i]; /* set the first row */
-      while(curr != NULL)
-      {
-         if(strcmp(label, curr->name))
-            curr = curr->next; /* next row */
-         else
-         return -1; /* found existance */
-      }
-   }
-   strcpy(pSpLine -> label, label); /* save the current label , passed all checks */
-   return 0; /* no existance */
-}
+	labelNode *p; 
 
+	p = (labelNode *)safeAlloc(sCalloc, 1, sizeof(struct labelNode)); /* allocate mem for 1 lbl node */
 
-void instructionLable(char *line)
-{
-   char *token;
-   token = strtok(line," "); /* cut the type of instruction */
-   if(isspace(token[strlen(token)-1])) 
-      token[strlen(token)-1] = '\0'; /* cut the blanks */
-   insertLabel(token);
+   p -> name = (char*)safeAlloc(sMalloc, strlen(pSpLine -> label)+1); /* +1 for the null-terminator */
+   p -> name = strcpy(p -> name, pSpLine -> label); /* copy label name from splitted line pointer */
+   /* TODO: complete this assigning values node 
+   p -> type = type;
+   p -> value = value;
+   */
    
-}
-
-/* this function insert the new label to the table */
-void insertLabel(char* type)
-{  
-   int typeNum = typeCheck(type);
-   if(labelTable[0] == NULL)
-      creatLableTable(type,typeNum); /* creat new label table */
-   else
-      addLabel(type, typeNum); /* insert the curretn label to the exist label table */ 
-}
-
-
-/* this function creat label table and insert the new label */
-void creatLableTable(char *theType, int Numtype)
-{
-   labelTable[0] = (labelNode*)(malloc(sizeof(labelNode)));
-   switch (Numtype)
+   /* table is empty */
+   if(!lblHead)
    {
-      case 1: /* .data */
-      {
-        /* data(currentLine+ind); */
-         break;
-      }
-      case 2: /* .string */
-      {
-         break;
-      }
-      case 3: /* .entry */
-      {
-         break;
-      }
-      case 4: /* extern */
-      {
-         break;
-      }
+      lblHead = p; /* p first label table node, point label table head to it */
+      lblLast = p; /* p first and last label table node, point label table last to it */
+      return;
    }
+
+   /* table is not empty */
+   lblLast -> next = p; /* last label is new label */
+   lblLast = p; /* p last label table node, point label table last to it */
+
+   return;
+}
+
+/* Finds a symbol in the symbol table by 'name'. */
+boolean findLabel(char *name)
+{
+	labelNode *p;
    
-   if(labelTable[0] == NULL)
-   {
-      fprintf(stderr,"Memory allocation failed\n");
-      exit(-1);
-   }
-   strcpy(labelTable[0]->name, pSpLine -> label);
-   strcpy(labelTable[0]->type, theType);
-   labelTable[0]->next = NULL;
+	for (p = lblHead; p; p = p->next)
+		if (!strcmp(p -> name, name))
+			return true;
+
+	return false;
 }
 
-void addLabel(char *theType, int type)
+/* Updates the symbol table addresses. */
+void updateSymbolTabelAddresses(fileHandler fileH, int inc)
 {
-   int i;
-   labelNode *temp, *node;
+	slNode ptr;
+	for (ptr = fileH->symbol; ptr; ptr = ptr->next)
+	{
+		if (ptr->type == CODE)
+			ptr->value += inc;
+		else if (ptr->type == DATA)
+			ptr->value += fileH->IC + inc;
+	}
+}
+
+/* Returns the given symbol type. */
+symbolType getSymbolType(slNode symbol)
+{
+	if(symbol)
+		return symbol->type;
+	return UNDEFINED_SYMBOL;
+}
+
+/* Returns the given symbol value.  */
+long getSymbolVal(slNode symbol)
+{
+	if (symbol)
+		return symbol->value;
+	return 0;
+}
+
+/* will free current global label list */ 
+void freeLblTable()
+{
+   labelNode *p;
+
+   free(lblLast); /* free global last label node which we assigned mem in intitate proccess */
    
-   for(i=0;labelTable[i];i++)
+   p = lblHead -> next;
+
+   while(lblHead)
    {
-      temp = labelTable[i];
-      if(!strcmp(labelTable[i]->type,theType))
-      {
-         while(labelTable[i]->next)
-            temp = temp->next;
-         node = (labelNode*)(malloc(sizeof(labelNode)));
-         if(node == NULL)
-         {
-            fprintf(stderr,"Memory allocation failed\n");
-            exit(-1);
-         }
-         strcpy(node->name, pSpLine -> label);
-         strcpy(node->type, theType);
-         temp->next = node;
-         node->next = NULL;         
-         return;
-      } 
+      free(lblHead);
+      lblHead = p;
+      p = p -> next;
    }
-   node = (labelNode*)(malloc(sizeof(labelNode)));
-   if(node == NULL)
-   {
-      fprintf(stderr,"Memory allocation failed\n");
-      exit(-1);
-   }
-   strcpy(node->name, pSpLine -> label);
-   strcpy(node->type, theType);
-   labelTable[i] = node;
-   labelTable[i]->next = NULL;            
+
+    return;
 }
 
-void printlblTable(void)
+
+/* Debugging */
+void printSymbolTabel()
 {
-   labelNode *curr;
-   int i;
-   for(i=0;labelTable[i];i++)
-   {
-      curr = labelTable[i];
-      while(curr)
-      {
-         printf("name: %s, type: %s \t",curr->name,curr->type);
-         curr = curr->next;
-      }
-      putchar('\n');
-         
-   }
-}
+	labelNode *p;
 
-/* this function free all the allocation memory in the program */
-void freeAll(void)
-{
-   labelNode *prev, *curr;
-   int i;
-   for(i=0;labelTable[i];i++)
-   {
-      prev = labelTable[i];
-      curr = prev->next;
-      while(curr)
-      {
-         free(prev);
-         prev = curr;
-         curr = curr->next;
-      }
-      free(prev);
-   }
+	printf("\n\n\t====== Symbol-Table ====== \n\n");
+	for (p = lblHead; p; ptr = p->next)
+		printf("Name = %s \tType = %d\t Value = %li\n", ptr->name, ptr->type, ptr->value);
+	printf("\n\t=== End Of Symbol-Table === \n\n\n");
 }
-
-   

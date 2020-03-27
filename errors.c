@@ -81,7 +81,7 @@ void printError(errorList errorTitle, ...)
             break;
         /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
         case MISSING_DR_OP:
-            fprintf(stderr, "Missing directive or instruction commands");
+            fprintf(stderr, "Missing directive or instruction commands\n");
             break;
 
          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/

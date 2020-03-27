@@ -34,6 +34,7 @@ void initiate(char *fileName){
     }
 
     /* default: second or first round had issues */
+    freeLblList(); /*TODO: perhaps to merge one func freeAll to free all databases at end each file loop */
     fclose(fp);
     return; /* do not update symbol table nor go for second round on file */
 }
@@ -51,6 +52,8 @@ boolean firstRound(FILE *fp)
     {
         /* fetch line from file and save to local line var */
         fetchLine(fp, &line);
+
+        numRow++; /* global counter for current row num in current file */
         
         /* Debug */
         printf("\n%s-> size of line: %d\n", line, strlen(line));
@@ -66,10 +69,16 @@ boolean firstRound(FILE *fp)
             free(line);    
             continue; /* if error occur during splitLine() then errors in line */
         }
-        
-        free(line);  /* free alocated memory for line */
-    }
 
+        /* splitLine with no errors -> if label exist, insert to label table */
+        if(pSpLine -> lblFlag)
+        {
+            addLabel();  
+        }
+        
+        free(line);  /* free alocated memory for line, to free room for next line if exist */
+    }
+    
     /* if found errors in current file, first round failed, return false */
     if(numOfErrors)
         return false;

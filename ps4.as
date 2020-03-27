@@ -4,8 +4,10 @@
 .extern fn1
 MAIN:	add r3,LIST
 1T--yutuygjhgjhghvhgcgvjkhjhjhgchjkhkrs:
+stop:
+tr--:
         jsr fn1
-LOOP:	prn #48
+2LOOP:	prn #48
 		lea STR,r6
 		inc r6
 		mov r6,L3

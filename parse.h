@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h> /* for isalnum() etc */
 
 #include "globals.h"
 #include "errors.h"

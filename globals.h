@@ -1,6 +1,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include <stdio.h> /* for NULL recognize */
+
 #define COMMA ','
 #define IMMEDIATE_ADD_SIGN '#'
 #define COMMENT_SIGN ';'
@@ -29,10 +31,39 @@ typedef enum boolean{
 /* system's available registers */
 enum registers{NULL_REG= -1, RO=0, R1, R2, R3, R4, R5, R6, R7};
 
+/* ARE */
+typedef enum
+{
+	A_ABSOLUTE,
+	E_EXTERNAL,
+	R_RELOCATABLE
+} ARE;
+
+/* Types of instruction command line arguments */
+typedef enum
+{
+	NULL_METHOD = -1,
+	IMMEDIATE,
+	DIRECT,
+	DIRECT_REG,
+	REF_REG,
+	ADD_METHOD_COUNT
+} AddMethod;
+
+typedef enum
+{
+	UNDEFINED_SYMBOL = -1,
+	CODE,
+	DATA,
+	MACRO,
+	EXTERNAL
+} symbolType;
+
 /* split line object */
 typedef struct{
     boolean lblFlag; /* flag if current line has label */
     char *label; /* if there is no lable, then NULL */
+    
 
 }spLine;
 

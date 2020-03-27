@@ -27,7 +27,12 @@ typedef struct labelNode{
    
 }labelNode;
 
-labelNode *labelTable[NUMBER_OF_LABELS];
+/* global label tabel list head */
+labelNode *lblHead;
+
+/* last inserted label to save unesery list loop on new label insert */
+labelNode *lblLast;
+
 
 
 
@@ -37,7 +42,7 @@ void checkSyntax(char*);
 void Availability(char*);
 int checkExist(char*);
 void creatLableTable(char*,int);
-void addLabel(char*,int);
+void addLabel();
 void insertData(labelNode*, char*);
 void insertLabel(char*);
 void printlblTable(void);
