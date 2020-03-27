@@ -1,5 +1,5 @@
 assembler: assembler.o base.o file.o globals.o errors.o parse.o	structs.o
-	gcc -g -Wall -ansi -pedantic assembler.o base.o file.o globals.o errors.o parse.o -o assembler
+	gcc -g -Wall -ansi -pedantic assembler.o base.o file.o globals.o errors.o parse.o structs.o -o assembler
 
 assembler.o: assembler.c assembler.h errors.h base.h
 	gcc -c -Wall -ansi -pedantic assembler.c -o assembler.o

@@ -108,29 +108,34 @@ long getSymbolVal(labelNode *label)
 void freeLblTable()
 {
    labelNode *p;
-
-   free(lblLast); /* free global last label node which we assigned mem in intitate proccess */
    
    p = lblHead -> next;
 
    while(lblHead)
    {
-      free(lblHead);
-      lblHead = p;
+      free(lblHead->name); /* release allocated mem for name field of label node */
+      free(lblHead); /* release whole node */
+      
+      if(!p) /* only one node in lbl table, break */
+         break;
+
+      lblHead = p; /* move lblHead to point next node in table (if exist) */
       p = p -> next;
    }
+   
+   lblLast = NULL;
 
     return;
 }
 
 
-/* Debugging */
+/* Debug */
 void printLblTabel()
 {
 	labelNode *p;
 
 	printf("\n\n\t====== Symbol-Table ====== \n\n");
 	for (p = lblHead; p; p = p->next)
-		printf("Name = %s \tType = %d\t Value = %li\n", p->name, p->type); /* TODO: Add p -> value */
+		printf("Name = %s \tType = %d\t Value = %li\n", p->name); /* TODO: Add p -> type, p -> value */
 	printf("\n\t=== End Of Symbol-Table === \n\n\n");
 }

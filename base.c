@@ -79,6 +79,7 @@ boolean firstRound(FILE *fp)
         free(line);  /* free alocated memory for line, to free room for next line if exist */
     }
     
+    printLblTabel(); /* debug */
     /* if found errors in current file, first round failed, return false */
     if(numOfErrors)
         return false;
