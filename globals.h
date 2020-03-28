@@ -55,7 +55,7 @@ typedef enum
 	UNDEFINED_SYMBOL = -1,
 	CODE,
 	DATA,
-	MACRO,
+	ENTRY,
 	EXTERNAL
 } labelType;
 
@@ -63,6 +63,7 @@ typedef enum
 typedef struct{
     boolean lblFlag; /* flag if current line has label */
     char *label; /* if there is no lable, then NULL */
+
     
 
 }spLine;

@@ -14,6 +14,8 @@ extern spLine *pSpLine;
 ********************************************* FUNCTION PROTOTYPE **********************************************
 \*                                                                                                           */
 
+boolean fetchLabel(char *);
+
 /* The function checks wether a given char is a white char (exclude '\n') */
 boolean whiteCh(char);
 
@@ -23,18 +25,16 @@ boolean relevantToCheck(char *);
 /* checks if a given lable string is not a saved word of assembly */
 boolean isSavedWord(char *);
 
-/* checks if a given lable is valid string syntax */
-boolean isLegitSymbol(char *);
-
 /* will compute and check instructions */
 void parseInstruction();
 
 void parseDirective();
 
-void fetchLable(char *);
-
 void resetSpLine(spLine *);
+
+boolean fetchLable(char *);
 
 boolean isLabel(char *);
 
+/* checks if a given lable is valid string syntax */
 boolean isLegitLabel(char *);

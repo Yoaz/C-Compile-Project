@@ -39,6 +39,7 @@ void addLabel()
 	labelNode *p; 
 
 	p = (labelNode *)safeAlloc(sCalloc, 1, sizeof(struct labelNode)); /* allocate mem for 1 lbl node */
+   *p = (labelNode){0}; /* double making sure all struct fields will be reset to 0/null (inspite of using calloc()) */
 
    p -> name = (char*)safeAlloc(sMalloc, strlen(pSpLine -> label)+1); /* +1 for the null-terminator */
    p -> name = strcpy(p -> name, pSpLine -> label); /* copy label name from splitted line pointer */
@@ -62,14 +63,20 @@ void addLabel()
    return;
 }
 
-/* Finds a symbol in the symbol table by 'name'. */
+/* Finds a label in the label table by 'name'. */
 boolean findLabel(char *name)
 {
 	labelNode *p;
 
-	for (p = lblHead; p; p = p->next)
-		if (!strcmp(p -> name, name))
+   if(!lblHead)
+      return false;
+
+	for(p = lblHead; p; p = p->next)
+		if(!strcmp(p -> name, name))
+      {
+         printError(LABEL_EXIST ,name);
 			return true;
+      }
 
 	return false;
 }
@@ -134,8 +141,8 @@ void printLblTabel()
 {
 	labelNode *p;
 
-	printf("\n\n\t====== Symbol-Table ====== \n\n");
+	printf("\n\n\t***** Label-Table ***** \n\n");
 	for (p = lblHead; p; p = p->next)
-		printf("Name = %s \tType = %d\t Value = %li\n", p->name); /* TODO: Add p -> type, p -> value */
-	printf("\n\t=== End Of Symbol-Table === \n\n\n");
+		printf("Name = %s \tType = %d\t Value = %li\n", p->name, p->type, p->value); /* TODO: Add p -> type, p -> value */
+	printf("\n\t*** End Of Label-Table *** \n\n\n");
 }

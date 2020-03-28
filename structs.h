@@ -21,7 +21,7 @@ extern spLine *pSpLine;
 
 typedef struct labelNode{
    char *name; /* label name */
-   char type[TYPE_SIZE]; /* label type */
+   char *type; /* label type */
    int value; /* value of DC */
    struct labelNode *next; /* pointer to the next label */
    
@@ -32,8 +32,6 @@ labelNode *lblHead;
 
 /* last inserted label to save unesery list loop on new label insert */
 labelNode *lblLast;
-
-
 
 
 /* functions prototype */

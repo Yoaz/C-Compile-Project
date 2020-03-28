@@ -59,21 +59,13 @@ boolean splitLine(char *line)
     token = strtok(line, TOKEN_DELIM); 
     printf("This is the 1st token: %s, in size: %d \n", token, strlen(token)); /* debug */
    
-    if (token && isLabel(token))  /* if not null and the first part is a label */
-	{
-        if(isLegitLabel(token)) /* if label has legit syntax */ 
-        { 
-            pSpLine -> lblFlag = true;
-            /* copy the label name to the global splitted line label field */
-            pSpLine -> label = (char *)safeAlloc(sMalloc, strlen(token)); /* strlen(token) includes ':' at end */															
-            strncpy(pSpLine -> label, token, strlen(token)-1); /* -1 to remove COLON ':' char from input label */	
-            printf("This is the stored label: %s \n", pSpLine -> label);
-        }	
-											
-	}
-
-    /* The next part should be the directive or operation */
-    token = strtok(NULL, TOKEN_DELIM);
+    /* check if line starts with label and store in label field in splittedLine global char if does,
+    * otherwise prints relevant error if label is illegal or continue if line doesnt start with label */
+    if(fetchLabel(token))
+    {
+        /* The next part should be the directive or operation */
+        token = strtok(NULL, TOKEN_DELIM);
+    }  
 
     if (!token) /* missing directive or operation */
 	{
@@ -83,7 +75,7 @@ boolean splitLine(char *line)
 		return false;
 	}
 
-
+    /* else, line isn't empty, parse command */
 
 
     return true;
@@ -107,9 +99,28 @@ void resetSpLine(spLine *p)
 \*                                                                                                           */
 
 
-void fetchLable(char *token)
+boolean fetchLabel(char *label)
 {
-    /*TODO*/
+    char *token;
+
+    if (label && isLabel(label))  /* if not null and the first part is a label */
+	{
+        token = (char *)safeAlloc(sMalloc, strlen(label) -1);
+        strncpy(token, label, strlen(label)-1);
+
+        if(!findLabel(token) && isLegitLabel(token)) /* if label has legit syntax */ 
+        { 
+            pSpLine -> lblFlag = true;
+            /* copy the label name to the global splitted line label field */
+            pSpLine -> label = (char *)safeAlloc(sMalloc, strlen(token)); /* strlen(token) includes ':' at end */															
+            strncpy(pSpLine -> label, token, strlen(token)); /* -1 to remove COLON ':' char from input label */	
+            printf("This is the stored label: %s \n", pSpLine -> label);
+            free(token);
+            return true;
+        }											
+	}
+
+    return false;
 }
 
 
@@ -140,12 +151,12 @@ boolean isLegitLabel(char *label)
     {
         if(isalpha(*label))
         {
-            for (i = 1; i < (strlen(label)-1); i++)
+            for (i = 1; i < (strlen(label)); i++)
             {
                 /* check if contain illegal label chars, print related error if does, return false */
                 if(!isalnum(label[i]))
                 {
-                    printError(ILLEGAL_LABEL_CHARS, pSpLine -> label);
+                    printError(ILLEGAL_LABEL_CHARS, label);
                     numOfErrors++;
                     return false;
                 }
@@ -154,7 +165,7 @@ boolean isLegitLabel(char *label)
             /* check if label is a saved word, print related error if does, return false */
             if(isSavedWord(label))
             {
-                printError(SAVED_WORD, pSpLine -> label);
+                printError(SAVED_WORD, label);
                 numOfErrors++;
                 return false;
             }
@@ -163,7 +174,7 @@ boolean isLegitLabel(char *label)
         /* label starts with a number */
         else
         {
-            printError(LABEL_NUMERIC_START, pSpLine -> label);
+            printError(LABEL_NUMERIC_START, label);
             numOfErrors++;
             return false;
         }
@@ -172,7 +183,7 @@ boolean isLegitLabel(char *label)
     /* length of label is above limit allowed */
     else
     {
-        printError(LABEL_LENGTH, pSpLine -> label);
+        printError(LABEL_LENGTH, label);
         numOfErrors++;
         return false;
     }
@@ -186,13 +197,13 @@ boolean isSavedWord(char *label)
 {
    /* all the saved words in our program */
    if(!(
-   strcmp(label,"r0:") && strcmp(label,"r1:") && strcmp(label,"r2:") && strcmp(label,"r3:") && strcmp(label,"r4:") &&
-   strcmp(label,"r5:") && strcmp(label,"r6:") && strcmp(label,"r7:") &&
-   strcmp(label,"mov:") && strcmp(label,"cmp:") && strcmp(label,"add:") && strcmp(label,"sub:") &&
-   strcmp(label,"lea:") && strcmp(label,"clr:") && strcmp(label,"not:") && strcmp(label,"inc:") &&
-   strcmp(label,"dec:") && strcmp(label,"jmp:") && strcmp(label,"bne:") && strcmp(label,"red:") &&
-   strcmp(label,"prn:") && strcmp(label,"jsr:") && strcmp(label,"rts:") && strcmp(label,"stop:") &&
-   strcmp(label,".string:") && strcmp(label,".data:") && strcmp(label,".extern:") && strcmp(label,".entry:")
+   strcmp(label,"r0") && strcmp(label,"r1") && strcmp(label,"r2") && strcmp(label,"r3") && strcmp(label,"r4") &&
+   strcmp(label,"r5") && strcmp(label,"r6") && strcmp(label,"r7") &&
+   strcmp(label,"mov") && strcmp(label,"cmp") && strcmp(label,"add") && strcmp(label,"sub") &&
+   strcmp(label,"lea") && strcmp(label,"clr") && strcmp(label,"not") && strcmp(label,"inc") &&
+   strcmp(label,"dec") && strcmp(label,"jmp") && strcmp(label,"bne") && strcmp(label,"red") &&
+   strcmp(label,"prn") && strcmp(label,"jsr") && strcmp(label,"rts") && strcmp(label,"stop") &&
+   strcmp(label,".string") && strcmp(label,".data") && strcmp(label,".extern") && strcmp(label,".entry")
    ))
 	   return true;
 	

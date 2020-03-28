@@ -96,7 +96,7 @@ void printError(errorList errorTitle, ...)
         case ILLEGAL_LABEL_CHARS: /* label contains illegal chars */
             fprintf(stderr,"ERROR[%d,%d]:The label \"%s\" contains illegal chars\n",numRow,numColumn,va_arg(ap, char *));
             break;
-        case LABEL_DEFINED: /* redefinition of label */
+        case LABEL_EXIST: /* redefinition of label */
             fprintf(stderr,"ERROR[%d,%d]:The label \"%s\" already defined\n",numRow,numColumn,va_arg(ap, char *));
             break;
         case SAVED_WORD: /* label is saved word */

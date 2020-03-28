@@ -23,4 +23,5 @@ END:	stop
 LIST:	.data 6,-9
 		.data -100
 K:		.data 31
+K:
 .extern L3

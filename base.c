@@ -101,7 +101,8 @@ boolean secondRound(FILE *fp)
 
 
 /* reset all globals */
-void resetGlobals(){
+void resetGlobals()
+{
     IC = 0;
     DC = 0;
     numColumn = 0;
