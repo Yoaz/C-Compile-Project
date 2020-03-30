@@ -11,8 +11,6 @@
 \*                                                                                                           */
 
 
-
-
 /* The function checks wether a given char is a white char (exclude '\n') */ 
 boolean whiteCh(char ch)
 {
@@ -61,25 +59,76 @@ boolean splitLine(char *line)
    
     /* check if line starts with label and store in label field in splittedLine global char if does,
     * otherwise prints relevant error if label is illegal or continue if line doesnt start with label */
-    if(fetchLabel(token))
+    if(token && isLabel(token))  /* if not null and the first part is a label */
     {
-        /* The next part should be the directive or operation */
-        token = strtok(NULL, TOKEN_DELIM);
-    }  
+        if(fetchLabel(token))
+        {
+            /* The next part should be the directive or operation */
+            token = strtok(NULL, TOKEN_DELIM);
+        }  
 
-    if (!token) /* missing directive or operation */
+        /* label have errors, return false to fetch next line */
+        else
+            return false;
+        
+    }
+
+    /* empty restOfLine -> missing directive or operation */
+    if (!token) 
 	{
-		printError(MISSING_DR_OP);
+		printError(MISSING_CMD);
 		resetSpLine(pSpLine); /* reset splitted line fields */
         numOfErrors++;
 		return false;
 	}
+ 
+     /* else, line isn't empty, check command as next token in order/first token in line must be one of the system commands */
+     if(!isInstType(token) && !isDirType(token))
+     {
+        printError(UNDEF_CMD, token);
+		resetSpLine(pSpLine); /* reset splitted line fields */
+        numOfErrors++;
+		return false;   
+     }
+    
+    /* token is legit system command, store in global split line */
+    pSpLine -> cmd = (char *)safeAlloc(sCalloc, strlen(token)+1, sizeof(char)); /* +1 for '\0' */
+    strcpy(pSpLine -> cmd, token);
+    printf("This is the cmd: %s, in size: %d \n", pSpLine -> cmd, strlen(pSpLine -> cmd)); /* debug */
 
-    /* else, line isn't empty, parse command */
+    
+    /*
+     * each parseCmd func will recieve restOfLine content to examine
+     * and parse accordingly, will print related errors and return true if no such errors  
+     */
+    if(!strcmp(token, DIR_DATA)) /* This is a .data directive, split the arguments by 'COMMA' (,) */
+    {
+
+        /*parseData();*/
+    }
+
+    else if(!strcmp(token, DIR_STRING)) /* This is a .string directive, split the arguments by 'COMMA' (,) */
+    {
+        /*parseString();*/
+    }
+    
+    else if(!strcmp(token, DIR_ENTRY) || !strcmp(token, DIR_EXTERN))
+    {
+
+        if(!parseExternEntry(strtok(NULL, ""))) /* parse for extern/entry dir cmd's */
+            resetSpLine(pSpLine); /* reset splitted line fields */
+            return false;
+    }
+
+    else /* The other operations use the normal seperator */
+    {
+        
+    }
 
 
     return true;
 }
+
 
 /* reset splitted line global var */
 void resetSpLine(spLine *p)
@@ -89,9 +138,44 @@ void resetSpLine(spLine *p)
         p -> lblFlag = false;
         if(p -> label)
             free(p -> label);
+        if(p -> cmd)
+            free(p -> cmd);
     }
     
     /*TODO: complete this reset */
+}
+
+
+/* computes rather token is of type instruction command */
+boolean isInstType(char *token)
+{
+   /* all the saved words in our program */
+   if(!(
+   strcmp(token,"r0") && strcmp(token,"r1") && strcmp(token,"r2") && strcmp(token,"r3") && strcmp(token,"r4") &&
+   strcmp(token,"r5") && strcmp(token,"r6") && strcmp(token,"r7") &&
+   strcmp(token,"mov") && strcmp(token,"cmp") && strcmp(token,"add") && strcmp(token,"sub") &&
+   strcmp(token,"lea") && strcmp(token,"clr") && strcmp(token,"not") && strcmp(token,"inc") &&
+   strcmp(token,"dec") && strcmp(token,"jmp") && strcmp(token,"bne") && strcmp(token,"red") &&
+   strcmp(token,"prn") && strcmp(token,"jsr") && strcmp(token,"rts") && strcmp(token,"stop")
+   ))
+	   return true;
+	
+	return false;
+}
+
+
+/* compute rather token is a directive command */
+boolean isDirType(char *token)
+{
+   if(!(
+   strcmp(token, ".data") && 
+   strcmp(token, ".string") &&
+   strcmp(token, ".entry") &&
+   strcmp(token, ".extern")
+   ))
+        return true;
+
+    return false;
 }
 
 /*                                                                                                           *\
@@ -99,26 +183,25 @@ void resetSpLine(spLine *p)
 \*                                                                                                           */
 
 
-boolean fetchLabel(char *label)
+boolean fetchLabel(char *token)
 {
-    char *token;
+    char *lbl; /* if token is label, will hold token (label) minus the ':' at end of token */
 
-    if (label && isLabel(label))  /* if not null and the first part is a label */
-	{
-        token = (char *)safeAlloc(sMalloc, strlen(label) -1);
-        strncpy(token, label, strlen(label)-1);
+    lbl = (char *)safeAlloc(sCalloc, strlen(token) -1, sizeof(char)); /* minus the ':' in the token label */
+    strncpy(lbl, token, strlen(token)-1); /* copy to local lbl */
 
-        if(!findLabel(token) && isLegitLabel(token)) /* if label has legit syntax */ 
-        { 
-            pSpLine -> lblFlag = true;
-            /* copy the label name to the global splitted line label field */
-            pSpLine -> label = (char *)safeAlloc(sMalloc, strlen(token)); /* strlen(token) includes ':' at end */															
-            strncpy(pSpLine -> label, token, strlen(token)); /* -1 to remove COLON ':' char from input label */	
-            printf("This is the stored label: %s \n", pSpLine -> label);
-            free(token);
-            return true;
-        }											
-	}
+    if(!findLabel(lbl) && isLegitLabel(lbl)) /* if label has legit syntax */ 
+    { 
+        pSpLine -> lblFlag = true;
+        /* copy the label name to the global splitted line label field */
+        pSpLine -> label = (char *)safeAlloc(sMalloc, strlen(lbl)); /* strlen(token) includes ':' at end */															
+        strncpy(pSpLine -> label, lbl, strlen(lbl)); /* -1 to remove COLON ':' char from input label */	
+        printf("This is the stored label: %s \n", pSpLine -> label);
+        free(lbl); 
+        return true;
+    }
+    
+    free(lbl);											
 
     return false;
 }
@@ -162,8 +245,8 @@ boolean isLegitLabel(char *label)
                 }
             }
 
-            /* check if label is a saved word, print related error if does, return false */
-            if(isSavedWord(label))
+            /* check if label is a saved word (cannot be dir word as illegal char "." ), print related error if does, return false */
+            if(isInstType(label))
             {
                 printError(SAVED_WORD, label);
                 numOfErrors++;
@@ -192,45 +275,43 @@ boolean isLegitLabel(char *label)
 }
 
 
-/* this function checks if the label is named as saved word in assembly */
-boolean isSavedWord(char *label)
-{
-   /* all the saved words in our program */
-   if(!(
-   strcmp(label,"r0") && strcmp(label,"r1") && strcmp(label,"r2") && strcmp(label,"r3") && strcmp(label,"r4") &&
-   strcmp(label,"r5") && strcmp(label,"r6") && strcmp(label,"r7") &&
-   strcmp(label,"mov") && strcmp(label,"cmp") && strcmp(label,"add") && strcmp(label,"sub") &&
-   strcmp(label,"lea") && strcmp(label,"clr") && strcmp(label,"not") && strcmp(label,"inc") &&
-   strcmp(label,"dec") && strcmp(label,"jmp") && strcmp(label,"bne") && strcmp(label,"red") &&
-   strcmp(label,"prn") && strcmp(label,"jsr") && strcmp(label,"rts") && strcmp(label,"stop") &&
-   strcmp(label,".string") && strcmp(label,".data") && strcmp(label,".extern") && strcmp(label,".entry")
-   ))
-	   return true;
-	
-	return false;
-}
-
-/* this function is return the type of the current instruction */
-int typeCheck(char* type)
-{
-   if(!strcmp(type, ".data"))
-      return 1;
-   if(!strcmp(type, ".string"))
-      return 2;
-   if(!strcmp(type, ".entry"))
-      return 3;
-   if(!strcmp(type, ".extern"))
-      return 4;
-   return 0;
-}
 
 /*                                                                                                           *\
 ********************************************* DIRECTIVE PARSING ***********************************************
 \*                                                                                                           */
 
-/* TODO: parseDirective function */
-void parseDirective(){
+/* will parse rest of line with cmd: .entry/.extern directives */
+boolean parseExternEntry(char *restOfLine)
+{
+    char *token;
 
+    if(!restOfLine) /* missing label */
+    {
+        numOfErrors++;
+        printError(MISSING_LBL);
+        return false;
+    }
+
+    token = strtok(restOfLine, TOKEN_DELIM);
+
+    /* next part should be label */
+    if(!isLegitLabel(token)) /* extry/entry label is illegal return false */
+    {
+        numOfErrors++;
+        return false;
+    }
+
+    /* TODO: add the arguement to the splittedLine global var */
+
+    /* no more input in line (only one legit label after .entry/.extern) is allowed */
+    if(token = strtok(NULL, ""))
+    {
+        numOfErrors++;
+        printError(EXTRA_INPUT, token);
+        return false;
+    }
+    
+    return true;
 }
 
 

@@ -6,8 +6,15 @@ MAIN:	add r3,LIST
 1T--yutuygjhgjhghvhgcgvjkhjhjhgchjkhkrs:
 stop:
 tr--:
+TEST:
+
+.entry TR ssss
+.extern
+.extern stop
         jsr fn1
 2LOOP:	prn #48
+.drive  #1, r7
+YOYO: 			.give
 		lea STR,r6
 		inc r6
 		mov r6,L3

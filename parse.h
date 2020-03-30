@@ -23,12 +23,9 @@ boolean whiteCh(char);
 boolean relevantToCheck(char *);
 
 /* checks if a given lable string is not a saved word of assembly */
-boolean isSavedWord(char *);
+boolean isInstType(char *);
 
-/* will compute and check instructions */
-void parseInstruction();
-
-void parseDirective();
+boolean isDirType(char *);
 
 void resetSpLine(spLine *);
 
@@ -38,3 +35,6 @@ boolean isLabel(char *);
 
 /* checks if a given lable is valid string syntax */
 boolean isLegitLabel(char *);
+
+boolean parseExternEntry(char *);
+

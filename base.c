@@ -50,6 +50,9 @@ boolean firstRound(FILE *fp)
     /* As long as not end of file keep fetch lines from file */
     while(!feof(fp))
     {
+        if(feof(fp))
+            break; /* since file eof activated after trying to act on file once arrived end of file */
+        
         /* fetch line from file and save to local line var */
         fetchLine(fp, &line);
 
@@ -69,11 +72,16 @@ boolean firstRound(FILE *fp)
             free(line);    
             continue; /* if error occur during splitLine() then errors in line */
         }
-
+        
         /* splitLine with no errors -> if label exist, insert to label table */
         if(pSpLine -> lblFlag)
         {
-            addLabel();  
+            /* if(!strcmp(pSpLine -> cmd, DIR_ENTRY || !strcmp(pSpLine -> cmd, DIR_EXTERN)))
+            {
+                    printError(LABEL_ENTRY_EXTERN, pSpLine -> label); /* print warning for label with .entry/.extern
+                    continue; /* don't add label to label table as per assembly rules
+            } */
+            addLabel(); /* add to label table */
         }
         
         free(line);  /* free alocated memory for line, to free room for next line if exist */

@@ -22,6 +22,11 @@
 #define NUMBER_OF_LABELS 4
 #define OPCODES 15 
 
+#define DIR_DATA ".data"
+#define DIR_STRING ".string"
+#define DIR_ENTRY ".entry"
+#define DIR_EXTERN ".extern"
+
 /* define boolean variable */
 typedef enum boolean{
     false, 
@@ -29,7 +34,7 @@ typedef enum boolean{
 }boolean;
 
 /* system's available registers */
-enum registers{NULL_REG= -1, RO=0, R1, R2, R3, R4, R5, R6, R7};
+enum registers{NULL_REG= -1, RO, R1, R2, R3, R4, R5, R6, R7};
 
 /* ARE */
 typedef enum
@@ -59,11 +64,33 @@ typedef enum
 	EXTERNAL
 } labelType;
 
+/* enum for different instruction commands */
+typedef enum
+{
+	UNDEFINED_CMD = -1,
+	MOV = 0000,
+	CMP = 0001,
+	ADD = 0010,
+	SUB = 0011,
+	LEA = 0100,
+	CLRL = 0101,
+	NOT = 0110,
+	INC = 0111,
+	DEC = 1000,
+	JMP = 1001,
+	BNE = 1010, 
+	RED = 1011,
+	PRN = 1100,
+	JSR = 1101,
+	RTS = 1110,
+	STOP = 1111
+} cmdType;
+
 /* split line object */
 typedef struct{
     boolean lblFlag; /* flag if current line has label */
     char *label; /* if there is no lable, then NULL */
-
+	char *cmd;
     
 
 }spLine;

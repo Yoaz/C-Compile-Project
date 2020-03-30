@@ -80,8 +80,11 @@ void printError(errorList errorTitle, ...)
             fprintf(stderr, "None of the files provided seccuessfully translated\\found\n");
             break;
         /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-        case MISSING_DR_OP:
+        case MISSING_CMD:
             fprintf(stderr, "Missing directive or instruction commands\n");
+            break;
+        case UNDEF_CMD:
+            fprintf(stderr, "Undefined directive or instruction command: %s\n", va_arg(ap, char*));
             break;
 
          /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -150,6 +153,19 @@ void printError(errorList errorTitle, ...)
         case UPPER_CASE: /* not lower case */
             fprintf(stderr,"ERROR[%d,%d]: \"%s\" cant contain upper case letter\n",numRow,numColumn,va_arg(ap, char *));
             break;
+        
+        /* .extern  .entry */
+        case LABEL_ENTRY_EXTERN: /* warning for use of label with .entry or .extern */
+            fprintf(stderr,"WARNING[%d,%d]: \"%s\" label use before .entry or .extern command\n",numRow,numColumn,va_arg(ap, char *));
+            break;
+        case MISSING_LBL:
+            fprintf(stderr,"ERROR[%d,%d]: missing label\n",numRow,numColumn);
+            break;
+        /* general */
+        case EXTRA_INPUT:
+            fprintf(stderr,"ERROR[%d,%d]: \"%s\" is an extranous input in line\n",numRow,numColumn, va_arg(ap, char *));
+            break;
+
     }
     va_end(ap);
 }
