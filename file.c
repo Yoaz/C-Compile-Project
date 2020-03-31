@@ -23,7 +23,7 @@ void fetchLine(FILE *fd, char **line)
 {
    int ch, size=1, len=0, inString = false, firstQuote = false;
 
-    (*line)=(char *)safeAlloc(sMalloc,sizeof(char)*size);
+    (*line)=(char *)safeAlloc(sCalloc,1, sizeof(char)*size);
       
     /* as long as not end of file */
     while((ch=fgetc(fd)) != EOF)

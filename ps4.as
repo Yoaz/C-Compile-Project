@@ -10,6 +10,8 @@ TEST:
 
 .entry TR ssss
 .extern
+AA: .extern
+
 .extern stop
         jsr fn1
 2LOOP:	prn #48
@@ -29,6 +31,8 @@ END:	stop
 		 STR:	.string 			"ab  \"cd"
 LIST:	.data 6,-9
 		.data -100
-K:		.data 31
+K:		.data 31				   
+
 K:
-.extern L3
+.string 		ddds 		djh
+.extern L3   	

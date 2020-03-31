@@ -57,7 +57,7 @@ boolean splitLine(char *line)
     token = strtok(line, TOKEN_DELIM); 
     printf("This is the 1st token: %s, in size: %d \n", token, strlen(token)); /* debug */
    
-    /* check if line starts with label and store in label field in splittedLine global char if does,
+    /* check if line starts with label and store in label field in splittedLine global var if does,
     * otherwise prints relevant error if label is illegal or continue if line doesnt start with label */
     if(token && isLabel(token))  /* if not null and the first part is a label */
     {
@@ -98,25 +98,29 @@ boolean splitLine(char *line)
 
     
     /*
-     * each parseCmd func will recieve restOfLine content to examine
-     * and parse accordingly, will print related errors and return true if no such errors  
+     * each parseCmd() func will recieve restOfLine content to examine
+     * and parse accordingly, will print related errors if there are issues and return false,
+     * otherwise, store all related data in splitLine global var
+     * and return true
      */
-    if(!strcmp(token, DIR_DATA)) /* This is a .data directive, split the arguments by 'COMMA' (,) */
+    if(!strcmp(token, DIR_DATA)) /* This is a .data directive */
     {
 
         /*parseData();*/
     }
 
-    else if(!strcmp(token, DIR_STRING)) /* This is a .string directive, split the arguments by 'COMMA' (,) */
+    else if(!strcmp(token, DIR_STRING)) /* This is a .string directive */
     {
-        /*parseString();*/
+        if(!parseString(strtok(NULL, ""))) /* parse for .string dir cmd, if errors ocuured, free splitted line and false */
+            resetSpLine(pSpLine); /* reset splitted line */
+            return false;
     }
     
     else if(!strcmp(token, DIR_ENTRY) || !strcmp(token, DIR_EXTERN))
     {
 
         if(!parseExternEntry(strtok(NULL, ""))) /* parse for extern/entry dir cmd's */
-            resetSpLine(pSpLine); /* reset splitted line fields */
+            resetSpLine(pSpLine); /* reset splitted line */
             return false;
     }
 
@@ -130,9 +134,11 @@ boolean splitLine(char *line)
 }
 
 
-/* reset splitted line global var */
+/* free splitted line global var */
 void resetSpLine(spLine *p)
 {
+    argNode *a; /* for args list reset */
+
     if(p)
 	{
         p -> lblFlag = false;
@@ -140,6 +146,16 @@ void resetSpLine(spLine *p)
             free(p -> label);
         if(p -> cmd)
             free(p -> cmd);
+        if(p -> argsHead)
+        {
+            for (a = p -> argsHead; a -> next; a = a -> next) 
+            {
+                p = a -> next;
+                free(a);
+                a = p;
+            }
+        }
+        free(p);
     }
     
     /*TODO: complete this reset */
@@ -178,6 +194,35 @@ boolean isDirType(char *token)
     return false;
 }
 
+/* add a single arg to an args list, if no list, head of current splitted line is assigned
+* to point to current new arg */
+boolean addArgToArgList(char *arg)
+{
+	argNode *p, *tmp; 
+
+    if(!arg) /* safety major */
+        return false;
+
+    if(!pSpLine) /* safety major */
+        return false;
+
+    p = (argNode *)safeAlloc(sCalloc, 1, sizeof(argNode)); /* allocate for argNode */
+    p -> name = safeAlloc(sCalloc, 1, strlen(arg) +1); /* allocate for arg name +1 for null terminater in string */
+    strcpy(p -> name, arg); /* copy to arg name */
+
+	if(!(pSpLine -> argsHead)) /* There is no head, the new argument is the head */
+    {
+        pSpLine -> argsHead = p;
+		return true;
+    }
+
+	for (tmp = pSpLine -> argsHead; pSpLine -> argsHead -> next; tmp = pSpLine -> argsHead -> next) 
+		; /* run till last node in current line args list */
+
+	tmp -> next = p; /* add new node to list at the end */
+
+	return true;
+}
 /*                                                                                                           *\
 ********************************************* LABLE PARSING ***************************************************
 \*                                                                                                           */
@@ -285,6 +330,9 @@ boolean parseExternEntry(char *restOfLine)
 {
     char *token;
 
+    if(pSpLine -> lblFlag == true) /* use of label with .extern/.entry -> issue a warning (not an error) */
+        printError(LABEL_ENTRY_EXTERN, pSpLine -> label);
+
     if(!restOfLine) /* missing label */
     {
         numOfErrors++;
@@ -302,6 +350,14 @@ boolean parseExternEntry(char *restOfLine)
     }
 
     /* TODO: add the arguement to the splittedLine global var */
+    if(!addArgToArgList(token))
+    {
+        return false;
+    }
+
+    else{
+    printf("THIS IS THE ARG: %s\n", pSpLine -> argsHead -> name); /* debug */
+    }
 
     /* no more input in line (only one legit label after .entry/.extern) is allowed */
     if(token = strtok(NULL, ""))
@@ -310,11 +366,80 @@ boolean parseExternEntry(char *restOfLine)
         printError(EXTRA_INPUT, token);
         return false;
     }
-    
+
     return true;
 }
 
+/* parse .string arguments */
+boolean parseString(char *restOfLine)
+{
+    char *temp, *firstQuot, *secondQuot;
+    boolean inString = false;
 
+
+    if(!restOfLine) /* missing string */
+    {
+        numOfErrors++;
+        printError(MISSING_STRING);
+        return false;
+    }
+
+    temp = restOfLine;
+
+    if(!strchr(temp, STRING_START)) /* no quotation mark in rest of line after .string command */
+    {
+        printError(MISSING_STRING_START, temp);
+        return false;
+    }
+    
+    if(strchr(temp, STRING_START) == strrchr(temp, STRING_START)) /* no quotation mark to mark string end in .string command */
+    {
+        printError(MISSING_STRING_END, temp);
+        return false;
+    }
+
+    /* line isn't empty and there's at least 2 different quotation marks in string after .string command */
+    firstQuot = strchr(temp, STRING_START); /* assign address of first quotataion mark show */
+    secondQuot = strrchr(temp, STRING_START); /* assign address of last quotataion mark show (already made sure they are different and existant */
+
+    while(*temp) /* loop till string end */
+    {
+        if(whiteCh(*temp) && !inString) /* can be white space before begining of string declaration */
+            continue;
+        
+        if((!whiteCh(*temp)) && (temp < firstQuot) && (!inString)) /* characters after .string command, but, before string declaration */
+        {
+            /* TODO: send the illegal input by using firstQuot address index and pointer begining index temp */
+            printError(ILLEGAL_BEFORE_STRING);
+            return false;
+        }
+        
+        if(temp == firstQuot)
+        {
+            inString = true;
+
+        }
+        temp++;
+    }
+
+    /* TODO: add the arguement to the splittedLine global var */
+    if(!addArgToArgList(restOfLine))
+    {
+        return false;
+    }
+
+    else{
+        printf("THIS IS THE ARG: %s\n", pSpLine -> argsHead -> name); /* debug */
+    }
+
+    return true;
+}
+
+/* parse .data arguments */
+boolean parseData(char *restOfLine)
+{
+        
+}
 /*                                                                                                           *\
 ********************************************* INSTRUCTION PARSING *********************************************
 \*                                                                                                           */

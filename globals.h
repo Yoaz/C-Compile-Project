@@ -60,6 +60,7 @@ typedef enum
 	UNDEFINED_SYMBOL = -1,
 	CODE,
 	DATA,
+	STRING,
 	ENTRY,
 	EXTERNAL
 } labelType;
@@ -86,17 +87,28 @@ typedef enum
 	STOP = 1111
 } cmdType;
 
+/* arguments from each line stored in list arguments */
+typedef struct argNode
+{
+	char *name;
+	struct argNode *next;
+}argNode;
+
 /* split line object */
-typedef struct{
-    boolean lblFlag; /* flag if current line has label */
+typedef struct
+{
+    boolean lblFlag; /* flag if current line has label, default = false */
     char *label; /* if there is no lable, then NULL */
-	char *cmd;
-    
+	char *cmd; /* will hold the command in current line */
+	argNode *argsHead;	/* Pointer to the head of arguments object (if there isn't, then NULL) */ 
 
 }spLine;
 
 /* pointer to split line object */
 spLine *pSpLine;
+
+
+
 
 
 #endif

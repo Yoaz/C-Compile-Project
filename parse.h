@@ -38,3 +38,6 @@ boolean isLegitLabel(char *);
 
 boolean parseExternEntry(char *);
 
+boolean parseString(char *);
+
+boolean addArgToArgList(char *);

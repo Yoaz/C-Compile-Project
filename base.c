@@ -48,7 +48,7 @@ boolean firstRound(FILE *fp)
     IC=0, DC=0, numOfErrors = 0, numColumn = 0; /* reset global vars */
     
     /* As long as not end of file keep fetch lines from file */
-    while(!feof(fp))
+    while(1)
     {
         if(feof(fp))
             break; /* since file eof activated after trying to act on file once arrived end of file */
