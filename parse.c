@@ -210,7 +210,7 @@ boolean addArgToArgList(char *arg)
 		return true;
     }
 
-	for (tmp = pSpLine -> argsHead; pSpLine -> argsHead -> next; tmp = pSpLine -> argsHead -> next) 
+	for (tmp = pSpLine -> argsHead; tmp -> next; tmp = tmp -> next) 
 		; /* run till last node in current line args list */
 
 	tmp -> next = p; /* add new node to list at the end */
