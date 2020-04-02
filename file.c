@@ -8,7 +8,7 @@
 FILE *fetchFile(char *fileName, char *fileMode)
 {
     FILE *fp;
-
+    
     if(!(fp = fopen(fileName, fileMode) )) /* Check success of file open */
         return NULL; /* no success in opening the file, return NULL to FILE * pointer */
 
@@ -40,12 +40,6 @@ void fetchLine(FILE *fd, char **line)
             inString = true;
             firstQuote = true;
             }
-        }
-
-        /* TODO: check if possible to deal with commas already while fetching line */
-        if( (ch == (char)COMMA) && !inString )
-        {
-            
         }
 
         /* On the fly replacing multiple inputed white chars (exclude '\n') with one space char (' '), 

@@ -112,7 +112,10 @@ void printError(errorList errorTitle, ...)
             fprintf(stderr,"ERROR[%d,%d]: The directive \"%s\" is not found\n",numRow,numColumn,va_arg(ap, char *));
             break;
     
-        /* .data */    
+        /* .data */ 
+        case MISSING_DATA: /* missing data */
+            fprintf(stderr,"ERROR[%d,%d]: Missing data value with .data command\n",numRow,numColumn);
+            break;
         case DATA_INVALID: /* invalid data */
             fprintf(stderr,"ERROR[%d,%d]: \"%s\" is invalid insertion with .data\n",numRow,numColumn,va_arg(ap, char *));
             break;
@@ -172,6 +175,11 @@ void printError(errorList errorTitle, ...)
             break;
         case MISSING_LBL:
             fprintf(stderr,"ERROR[%d,%d]: Missing label\n",numRow,numColumn);
+            break; 
+       
+        /* instructions */
+        case MISSING_OPERAND: /* warning for use of label with .entry or .extern */
+            fprintf(stderr,"ERROR[%d,%d]: Missing operand\n",numRow,numColumn);
             break;
         /* general */
         case EXTRA_INPUT:

@@ -116,6 +116,9 @@ void freeLblTable()
 {
    labelNode *p;
    
+   if(!lblHead)
+      return;
+      
    p = lblHead -> next;
 
    while(lblHead)
@@ -141,8 +144,26 @@ void printLblTabel()
 {
 	labelNode *p;
 
+   if(!lblHead){
+      puts("\nNO LABELS IN THIS FILE\n");
+      return;
+   }
+
 	printf("\n\n\t***** Label-Table ***** \n\n");
 	for (p = lblHead; p; p = p->next)
 		printf("Name = %s \tType = %d\t Value = %li\n", p->name, p->type, p->value); /* TODO: Add p -> type, p -> value */
 	printf("\n\t*** End Of Label-Table *** \n\n\n");
+}
+
+/* Debug */
+void printArgTabel()
+{
+	argNode *p;
+
+   printf("ARGS-LIST --> ");
+	for (p = pSpLine -> argsHead; p; p = p->next)
+		printf("Name = %s ", p->name); /* TODO: Add p -> type, p -> value */
+   
+   puts("\n");
+   
 }

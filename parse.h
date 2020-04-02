@@ -41,3 +41,5 @@ boolean parseExternEntry(char *);
 boolean parseString(char *);
 
 boolean addArgToArgList(char *);
+
+boolean parseData(char *restOfLine);

@@ -46,5 +46,6 @@ labelType getLabelType(labelNode *);
 long getSymbolVal(labelNode *);
 void freeLblTable();
 boolean findLabel(char *);
+void printArgTabel();
 
 #endif
