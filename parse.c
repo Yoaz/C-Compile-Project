@@ -77,7 +77,6 @@ boolean splitLine(char *line)
     if (!token) 
 	{
 		printError(MISSING_CMD);
-		resetSpLine(pSpLine); /* reset splitted line fields */
         numOfErrors++;
 		return false;
 	}
@@ -86,7 +85,6 @@ boolean splitLine(char *line)
      if(!isInstType(token) && !isDirType(token))
      {
         printError(UNDEF_CMD, token);
-		resetSpLine(pSpLine); /* reset splitted line fields */
         numOfErrors++;
 		return false;   
      }
@@ -103,40 +101,28 @@ boolean splitLine(char *line)
      * otherwise, store all related data in splitLine global var
      * and return true
      */
-     if(!strcmp(token, DIR_STRING)) /* This is a .string directive */
+    if(!strcmp(token, DIR_STRING)) /* This is a .string directive */
     {
         if(!parseString(strtok(NULL, ""))) /* parse for .string dir cmd, if errors ocuured, free splitted line and false */
-        {   
-            resetSpLine(pSpLine); /* reset splitted line */
             return false;
-        }
+        
     }
     
     else if(!strcmp(token, DIR_ENTRY) || !strcmp(token, DIR_EXTERN))
     {
-
         if(!parseExternEntry(strtok(NULL, ""))) /* parse for extern/entry dir cmd's */
-            {
-            resetSpLine(pSpLine); /* reset splitted line */
             return false;
-            }
     }
 
     else /* The other operations use the normal seperator */
     {
-
-        if(!parseData(strtok(NULL, ""))) /* parse for extern/entry dir cmd's */
-            {
-            resetSpLine(pSpLine); /* reset splitted line */
+        if(!parseCmd(strtok(NULL, ""))) /* parse for .data and all instructions cmd's */
             return false;
-            }
+            
         
         if(pSpLine -> argsHead)
             printArgTabel();
-        
     }
-
-
 
     return true;
 }
@@ -444,9 +430,9 @@ boolean parseString(char *restOfLine)
 }
 
 /* parse .data arguments */
-boolean parseData(char *restOfLine)
+boolean parseCmd(char *restOfLine)
 {
-    int argc, argLen;
+    int argc=0, argLen=0;
     char *temp;
 
  	enum
@@ -468,9 +454,6 @@ boolean parseData(char *restOfLine)
             printError(MISSING_OPERAND);
         return false;
     }
-
-	argc = 0;
-    argLen = 0;
 
 	for (i = 0; restOfLine[i]; i++) /* Run on the line, char by char */
 	{
@@ -504,10 +487,7 @@ boolean parseData(char *restOfLine)
                     free(temp);
                     return false;
                 }
-                else
-                {
-                printf("THIS IS THE ARG: %s\n", pSpLine -> argsHead -> name); /* debug */
-                 }
+
                 argLen = 0;
 				++argc;
                 free(temp);
@@ -551,9 +531,7 @@ boolean parseData(char *restOfLine)
             free(temp);
             return false;
         }
-        else{
-        printf("THIS IS THE ARG: %s\n", pSpLine -> argsHead -> name); /* debug */
-        }
+
         argLen = 0;
         ++argc;
         free(temp);

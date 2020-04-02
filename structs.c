@@ -13,26 +13,6 @@
 \*                                                                                                           */
 
 
-/* this function checks the declared label *
-void labelCheck(char *label)
-{
-            
-   strcpy(pSpLine -> label, ""); /* reset the label *
-   checkSyntax(label); /* checks the syntax of the current label *
-   Availability(label); /* checks if the label is one of the saved words *
-   if(checkExist(label) == -1) /* checks the existance of current label *
-   { /* -1 if there is existance *
-         error++; /* increase number of errors *
-         strcat(errorBuff, "The label \""); /* prepare the error out-put *
-         strcat(errorBuff, label);
-         strcat(errorBuff, "\" is already exist\n");
-         errorsOut(); /* if there is an error print it *
-   }
-   labelFlag = 1;
-}
-*/
-
-
 /* Add a new symbol to the symbol-table from global splitted line var (pointer) fetched data */
 void addLabel()
 {

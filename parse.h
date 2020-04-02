@@ -42,4 +42,4 @@ boolean parseString(char *);
 
 boolean addArgToArgList(char *);
 
-boolean parseData(char *restOfLine);
+boolean parseCmd(char *restOfLine);

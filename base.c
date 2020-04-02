@@ -28,6 +28,7 @@ void initiate(char *fileName){
         if(secondRound(fp)) /* second round was success */
         { 
             successFiles++; /* file went through the full parsing to meching code process with no errors, add to success files global counter */
+            resetSpLine(pSpLine); /* free global splitted line var */
             fclose(fp);
             return; /* next file if exist */
         }
@@ -35,6 +36,7 @@ void initiate(char *fileName){
 
     /* default: second or first round had issues */
     freeLblTable(); /*TODO: perhaps to merge one func freeAll to free all databases at end each file loop */
+    resetSpLine(pSpLine); /* free global splitted line var */
     fclose(fp);
     return; /* do not update symbol table nor go for second round on file */
 }
@@ -69,6 +71,7 @@ boolean firstRound(FILE *fp)
         /* time to parse which type of line this is */
         if(!splitLine(line)) /* compute which RELEVANT line this is and split accordingly and assign to global splited line object */
         {   
+            resetSpLine(pSpLine); /* free global splitted line var */
             free(line);    
             continue; /* if error occur during splitLine() then errors in line */
         }
