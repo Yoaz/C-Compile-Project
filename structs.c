@@ -140,9 +140,17 @@ void printArgTabel()
 {
 	argNode *p;
 
+   if(!pSpLine || !pSpLine -> argsHead)
+   {
+      puts("\nNO ARGS IN THIS COMMAND\n");
+      return;
+   }
+      
+
    printf("ARGS-LIST --> ");
 	for (p = pSpLine -> argsHead; p; p = p->next)
 		printf("Name = %s ", p->name); /* TODO: Add p -> type, p -> value */
+   printf("\tNum of args: %d", pSpLine -> numArgs);
    
    puts("\n");
    

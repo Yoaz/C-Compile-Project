@@ -36,7 +36,6 @@ void initiate(char *fileName){
 
     /* default: second or first round had issues */
     freeLblTable(); /*TODO: perhaps to merge one func freeAll to free all databases at end each file loop */
-    resetSpLine(pSpLine); /* free global splitted line var */
     fclose(fp);
     return; /* do not update symbol table nor go for second round on file */
 }

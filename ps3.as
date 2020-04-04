@@ -17,3 +17,5 @@ jsr
 
 dr
 STR: .string " d"
+jsr r4, #4    ,3 , 6 ,
+AA: .data 4     ,4,5 ,6

@@ -101,6 +101,7 @@ typedef struct
     char *label; /* if there is no lable, then NULL */
 	char *cmd; /* will hold the command in current line */
 	argNode *argsHead;	/* Pointer to the head of arguments object (if there isn't, then NULL) */ 
+	int numArgs;
 
 }spLine;
 

@@ -185,7 +185,9 @@ void printError(errorList errorTitle, ...)
         case EXTRA_INPUT:
             fprintf(stderr,"ERROR[%d,%d]: \"%s\" is an extraneous input in line\n",numRow,numColumn, va_arg(ap, char *));
             break;
-
+        case NUM_RANGE:
+            fprintf(stderr,"ERROR[%d,%d]: \"%s\" is off range for this command\n",numRow,numColumn, va_arg(ap, char *));
+            break;
     }
     va_end(ap);
 }

@@ -11,42 +11,17 @@
 \*                                                                                                           */
 
 
-/* The function checks wether a given char is a white char (exclude '\n') */ 
-boolean whiteCh(char ch)
-{
-    if(ch == ' ' || ch == '\t' || ch == '\v' || ch == '\f' || ch == '\r')
-        return true;
-    return false;
-}
-
-
-/* checks if there is a need to parse a given line */
-boolean relevantToParse(char *line)
-{
-	char *p; 
-
-	if (!line || *line == COMMENT_SIGN || *line == LINE_BREAK || !strlen(line)){ /* ignore undefined/comments/empty lines */
-        printf("IGNORED LINE: %s\n", line); /* debug */
-        return false;
-    }
-
-	for (p = line; p<p + strlen(line); p++)
-    {
-		if (!isspace(*p)) /* The line isn't empty */
-        {
-            printf("DIDN'T IGNORE LINE: %s\n", line); /* debug */
-			return true;     
-        } 
-    }
-    
-	return false;
-}
-
-/* will split the line and assign to relevant global splitted line var */
+/* 
+* Core func in parsing the current input line, func parse each provided token from input 
+* and compute rather legit based on assmebly rules, will drop related error if not and return false,
+* otherwise, will split the line and assign to relevant global splitted line var 
+*/
 boolean splitLine(char *line)
 {
     char *token;
     int c;
+    argNode *arg; /* for use - run on args */
+
     pSpLine = (spLine *)safeAlloc(sCalloc, 1, sizeof(spLine)); /* assign memory to global splitted line var */
 
     printf("REACHED SPLIT LINE: %s\n", line); /* debug */
@@ -118,13 +93,76 @@ boolean splitLine(char *line)
     {
         if(!parseCmd(strtok(NULL, ""))) /* parse for .data and all instructions cmd's */
             return false;
+
+
+        if(!pSpLine -> argsHead) /* for instructions with 0 operands requirement  ('stop' in ex.) */
+            return true; 
+
+
+        /* operands legit check for .data directive or instruction commands that requires at least 1 operand accordingly */
+        for (arg = pSpLine -> argsHead; arg; arg = arg -> next)  
+        {
+            if(!strcmp(pSpLine -> cmd, DIR_DATA))
+            {
+                /* check arg is a number */
+                if(!isNumber(arg -> name))
+                {
+                    printError(DATA_INVALID, arg -> name);
+                    return false;
+                }
+                /* check num range valid for 15bits size */
+                if(!numInRange(arg -> name))
+                {
+                    printError(NUM_RANGE, arg -> name);
+                    return false;
+                }
+            }
+
+            /* else, instruction command, check legit current IC line provided args */
+            if(!legitICArgs())
+            {
+                return false;
+            }   
             
-        
-        if(pSpLine -> argsHead)
-            printArgTabel();
+        }  
     }
 
+    if(pSpLine -> argsHead)
+        printArgTabel();
+
     return true;
+}
+
+
+/* checks if there is a need to parse a given line */
+boolean relevantToParse(char *line)
+{
+	char *p; 
+
+	if (!line || *line == COMMENT_SIGN || *line == LINE_BREAK || !strlen(line)){ /* ignore undefined/comments/empty lines */
+        printf("IGNORED LINE: %s\n", line); /* debug */
+        return false;
+    }
+
+	for (p = line; p<p + strlen(line); p++)
+    {
+		if (!isspace(*p)) /* The line isn't empty */
+        {
+            printf("DIDN'T IGNORE LINE: %s\n", line); /* debug */
+			return true;     
+        } 
+    }
+    
+	return false;
+}
+
+
+/* The function checks wether a given char is of white char (exclude '\n') */ 
+boolean whiteCh(char ch)
+{
+    if(ch == ' ' || ch == '\t' || ch == '\v' || ch == '\f' || ch == '\r')
+        return true;
+    return false;
 }
 
 
@@ -148,6 +186,8 @@ void resetSpLine(spLine *p)
                 free(a);
                 a = p;
             }
+
+            p ->  numArgs = 0;
         }
         free(p);
     }
@@ -188,6 +228,7 @@ boolean isDirType(char *token)
     return false;
 }
 
+
 /* add a single arg to an args list, if no list, head of current splitted line is assigned
 * to point to current new arg */
 boolean addArgToArgList(char *arg)
@@ -217,6 +258,7 @@ boolean addArgToArgList(char *arg)
 
 	return true;
 }
+
 /*                                                                                                           *\
 ********************************************* LABLE PARSING ***************************************************
 \*                                                                                                           */
@@ -319,6 +361,7 @@ boolean isLegitLabel(char *label)
 ********************************************* DIRECTIVE PARSING ***********************************************
 \*                                                                                                           */
 
+
 /* will parse rest of line with cmd: .entry/.extern directives */
 boolean parseExternEntry(char *restOfLine)
 {
@@ -349,10 +392,6 @@ boolean parseExternEntry(char *restOfLine)
         return false;
     }
 
-    else{
-    printf("THIS IS THE ARG: %s\n", pSpLine -> argsHead -> name); /* debug */
-    }
-
     /* no more input in line (only one legit label after .entry/.extern) is allowed */
     if(token = strtok(NULL, ""))
     {
@@ -361,8 +400,12 @@ boolean parseExternEntry(char *restOfLine)
         return false;
     }
 
+    pSpLine ->  numArgs = 1;
+
+
     return true;
 }
+
 
 /* parse .string arguments */
 boolean parseString(char *restOfLine)
@@ -422,14 +465,13 @@ boolean parseString(char *restOfLine)
         return false;
     }
 
-    else{
-        printf("THIS IS THE ARG: %s\n", pSpLine -> argsHead -> name); /* debug */
-    }
-
+    pSpLine ->  numArgs = 1;
+    
     return true;
 }
 
-/* parse .data arguments */
+
+/* parse .data arguments  ISSUE: when .data odd num of arguments + error (illegal comma, not a number argument -> segmentation error) */
 boolean parseCmd(char *restOfLine)
 {
     int argc=0, argLen=0;
@@ -450,6 +492,8 @@ boolean parseCmd(char *restOfLine)
         numOfErrors++;
         if(!strcmp(pSpLine -> cmd, DIR_DATA))
             printError(MISSING_DATA);
+        else if(!strcmp(pSpLine -> cmd, "stop"))
+            return true;
         else    
             printError(MISSING_OPERAND);
         return false;
@@ -516,6 +560,7 @@ boolean parseCmd(char *restOfLine)
 	if (status == waitForArg) /* There is a separator at the end of the line */
 	{
 		printf("Illegal SEPARATOR. \n");
+        
 		return false;
 	}
 
@@ -547,6 +592,8 @@ boolean parseCmd(char *restOfLine)
         return false;
     }
 
+    pSpLine -> numArgs = argc; /* assign num of args to global splitted var */
+
 	return true;
 }
 
@@ -554,22 +601,64 @@ boolean parseCmd(char *restOfLine)
 ********************************************* INSTRUCTION PARSING *********************************************
 \*                                                                                                           */
 
-/* TODO: parseInstruction function */
-void parseInstruction(){
+/* 
+* compute rather line provided args are legit for the current line instruction command
+* as well as that there are num of args that are legit currsponded to the command capabilities
+ */
+boolean legitICArgs()
+{
+    return true;
 
 }
+
 
 /* Checks whether a given parameter is a number. */
 boolean isNumber(char *arg)
 {
-	char *ptr = arg; /* Helper */
+	char *ptr = arg; 
 
-	if (!arg || (*ptr != '+' && *ptr != '-' && !isdigit(*ptr))) /* Number can have a sign of + or -, it's absolute. */
+    if(!arg)
+        return false;
+
+	if(*ptr != '+' && *ptr != '-' && !isdigit(*ptr)) /* Number can have a sign of + or -, it's absolute. */
 		return false;
 
-	for (ptr++; *ptr; ptr++)
-		if (!isdigit(*ptr))
+	for(ptr++; *ptr; ptr++)
+		if(!isdigit(*ptr))
 			return false;
 
 	return true;
+}
+
+
+/* 
+* Checks if arg num is in range for instruction commands: 
+* for .data should be between -16384 - 16383 (15bits), 
+* for rest -2048 - 2047 (12bits).
+*/
+boolean numInRange(char *num)
+{
+    signed long tmp;
+
+    if(!num)
+        return false;
+
+    tmp = atoi(num);
+
+    if(!tmp)
+        return false;
+
+    if(!strcmp(pSpLine -> cmd, DIR_DATA))
+    {
+        if(tmp < -16384 || tmp > 16383)
+            return false;
+    }
+
+    else
+    {   
+        if(tmp < -2048 || tmp > 2048)
+            return false;
+    }
+
+    return true;
 }

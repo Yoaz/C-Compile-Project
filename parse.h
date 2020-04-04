@@ -33,6 +33,8 @@ boolean fetchLable(char *);
 
 boolean isLabel(char *);
 
+boolean isNumber(char *arg);
+
 /* checks if a given lable is valid string syntax */
 boolean isLegitLabel(char *);
 
@@ -43,3 +45,7 @@ boolean parseString(char *);
 boolean addArgToArgList(char *);
 
 boolean parseCmd(char *restOfLine);
+
+boolean legitICArgs();
+
+boolean numInRange(char *num);
