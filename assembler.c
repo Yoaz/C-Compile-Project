@@ -1,3 +1,11 @@
+/*                                                                                                           *\
+***************************************************************************************************************                                                                                                         
+AUTHOR: Yoaz Shmider
+ASSIGNMENT: Assembler -> Rules Apply
+VERSION: 1.0
+***************************************************************************************************************
+\*                                                                                                           */
+
 #include "assembler.h"
 
 
@@ -13,7 +21,7 @@ int main(int argc, char *argv[])
     while(--argc)
     {   
         resetGlobals(); /* for every new file round, reset all globals */
-        initiate(*++argv);
+        initiate(*(++argv));
         if(numOfErrors)
             printError(ERRORS_IN_FILE, numOfErrors, *argv);
     }

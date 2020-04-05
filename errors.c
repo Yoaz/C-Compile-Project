@@ -2,7 +2,9 @@
 
 
 /*                                                                                                           *\
-********************************************* SYSTEM ERRORS ***************************************************
+***************************************************************************************************************                                                                                                         
+                                                SYSTEM ERRORS 
+***************************************************************************************************************
 \*                                                                                                           */
 
 /* 
@@ -53,10 +55,16 @@ void *safeAlloc(alloc_t allocation_type, ...)
 
 
 /*                                                                                                           *\
-********************************************* INTERNAL ERRORS *************************************************
+***************************************************************************************************************                                                                                                         
+                                                INTERNAL ERRORS 
+***************************************************************************************************************
 \*                                                                                                           */
 
-/* The function accepts error title based on enum and decimal, string (OPTIONAL (depend on type of error)) and print the specific error (GLOBAL - row, col) */
+/* 
+* Internal error exception function. accepts enum error title correspond to error type, 
+* string (OPTIONAL (depend on type of error)) 
+* and print the specific error (GLOBAL - row, col) 
+*/
 void printError(errorList errorTitle, ...)
 {
     va_list ap;
@@ -65,7 +73,7 @@ void printError(errorList errorTitle, ...)
 
     switch (errorTitle)
     {
-        /* FILE */
+        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ FILE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
         case NO_FILES: /* no arguments in command line except the program name */
             fprintf(stderr,"No files to compile\n");
             exit(1); /* case of fatal error, exit program */
@@ -79,7 +87,8 @@ void printError(errorList errorTitle, ...)
         case WRONG_FILES:
             fprintf(stderr, "None of the files provided seccuessfully translated\\found\n");
             break;
-        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ COMMAND ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
         case MISSING_CMD:
             fprintf(stderr, "ERROR[%d,%d]: Missing directive or instruction commands\n", numRow,numColumn);
             break;
@@ -87,9 +96,7 @@ void printError(errorList errorTitle, ...)
             fprintf(stderr, "ERROR[%d,%d]: Undefined directive or instruction command: %s\n", numRow,numColumn,va_arg(ap, char *));
             break;
 
-         /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-        
-        /* label */
+         /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ LABEL ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/ 
         case LABEL_NUMERIC_START: /* label start with non aplphabetic */
             fprintf(stderr,"ERROR[%d,%d]: The label \"%s\" cannot start with non alphabetic letter\n",numRow,numColumn,va_arg(ap, char *));
             break;
@@ -105,9 +112,9 @@ void printError(errorList errorTitle, ...)
         case SAVED_WORD: /* label is saved word */
             fprintf(stderr,"ERROR[%d,%d]: The label \"%s\" is a saved word in assembly\n",numRow,numColumn,va_arg(ap, char *));
             break;
-        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-        /* Directive */   
+        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ DIRECTIVE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+        /* general*/
         case DIR_NO_FOUND: /* directive not found */
             fprintf(stderr,"ERROR[%d,%d]: The directive \"%s\" is not found\n",numRow,numColumn,va_arg(ap, char *));
             break;
@@ -118,6 +125,9 @@ void printError(errorList errorTitle, ...)
             break;
         case DATA_INVALID: /* invalid data */
             fprintf(stderr,"ERROR[%d,%d]: \"%s\" is invalid insertion with .data\n",numRow,numColumn,va_arg(ap, char *));
+            break;
+        case NOT_WHOLE: /* float number */
+            fprintf(stderr,"ERROR[%d,%d]: \"%s\" is not whole number\n",numRow,numColumn,va_arg(ap, char *));
             break;
 
         /* .string */
@@ -135,38 +145,9 @@ void printError(errorList errorTitle, ...)
             break;
         case STR_INVALID: /* invalid string */
             fprintf(stderr,"ERROR[%d,%d]: \"%s\" is invalid insertion with .string\n",numRow,numColumn,va_arg(ap, char *));
-            break;
-
-        case NOT_WHOLE: /* float number */
-            fprintf(stderr,"ERROR[%d,%d]: \"%s\" is not whole number\n",numRow,numColumn,va_arg(ap, char *));
-            break;
-
-        case INS_NO_FOUND: /* instruction not found */
-            fprintf(stderr,"ERROR[%d,%d]: The instruction \"%s\" is not found\n",numRow,numColumn,va_arg(ap, char *));
-            break;
-        
-        case WRONG_NUM_PARAM: /* wrong number of parameters */
-            fprintf(stderr,"ERROR[%d,%d]: Wrong number of param for  \"%s\"\n",numRow,numColumn,va_arg(ap, char *));
-            break;
-        
-        case INVALID_PARAM: /* invalid parameters */
-            fprintf(stderr,"ERROR[%d,%d]: Invalid parameters for \"%s\"\n",numRow,numColumn,va_arg(ap, char *));
-            break;
-        
+            break;       
         case LINE_LENGTH: /* to long line in file */
             fprintf(stderr,"ERROR[%d,0]: The line is over 80 letters\n",numRow,numColumn);
-            break;
-
-        case INVALID_LETTER: /* invalid letter */
-            fprintf(stderr,"ERROR[%d,%d]: \"%s\" invalid letter\n",numRow,numColumn,va_arg(ap, char *));
-            break;
-
-        case UNDEF_PARAM: /* undefined  param */
-            fprintf(stderr,"ERROR[%d,%d]: \"%s\" is undefined\n",numRow,numColumn,va_arg(ap, char *));
-            break;
-
-        case UPPER_CASE: /* not lower case */
-            fprintf(stderr,"ERROR[%d,%d]: \"%s\" cant contain upper case letter\n",numRow,numColumn,va_arg(ap, char *));
             break;
         
         /* .extern  .entry */
@@ -176,17 +157,34 @@ void printError(errorList errorTitle, ...)
         case MISSING_LBL:
             fprintf(stderr,"ERROR[%d,%d]: Missing label\n",numRow,numColumn);
             break; 
-       
-        /* instructions */
+
+        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ INSTRUCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+        /* general */
         case MISSING_OPERAND: /* warning for use of label with .entry or .extern */
             fprintf(stderr,"ERROR[%d,%d]: Missing operand\n",numRow,numColumn);
             break;
-        /* general */
-        case EXTRA_INPUT:
-            fprintf(stderr,"ERROR[%d,%d]: \"%s\" is an extraneous input in line\n",numRow,numColumn, va_arg(ap, char *));
+        case INVALID_INST_ARG:
+            fprintf(stderr,"ERROR[%d,%d]: Invalid instruction command arg \"%s\"\n",numRow,numColumn, va_arg(ap, char *));
+            break; 
+        case INVALID_REG_SYNT:
+            fprintf(stderr,"ERROR[%d,%d]: Invalid register syntax arg \"%s\"\n",numRow,numColumn, va_arg(ap, char *));
+            break; 
+        case INVALID_REG_REF_SYNT:
+            fprintf(stderr,"ERROR[%d,%d]: Invalid reference to register syntax arg \"%s\"\n",numRow,numColumn, va_arg(ap, char *));
+            break;  
+        case INVALID_REG_RANGE:
+            fprintf(stderr,"ERROR[%d,%d]: Invalid register arg range \"%s\"\n",numRow,numColumn, va_arg(ap, char *));
+            break;     
+        case IMMIDIET_SYNTAX:
+            fprintf(stderr,"ERROR[%d,%d]: Wrong immidiet arg type \"%s\"\n",numRow,numColumn, va_arg(ap, char *));
             break;
         case NUM_RANGE:
             fprintf(stderr,"ERROR[%d,%d]: \"%s\" is off range for this command\n",numRow,numColumn, va_arg(ap, char *));
+            break;
+
+        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ GENERAL ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+        case EXTRA_INPUT:
+            fprintf(stderr,"ERROR[%d,%d]: \"%s\" is an extraneous input in line\n",numRow,numColumn, va_arg(ap, char *));
             break;
     }
     va_end(ap);

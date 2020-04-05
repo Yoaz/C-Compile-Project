@@ -8,6 +8,7 @@
 
 extern numOfErrors; /* global file error counter */
 extern spLine *pSpLine;
+extern struct instructions ICS[NUM_INSTRUCTION_COMMANDS];
 
 
 /*                                                                                                           *\
@@ -44,8 +45,16 @@ boolean parseString(char *);
 
 boolean addArgToArgList(char *);
 
-boolean parseCmd(char *restOfLine);
+boolean parseCmd(char *);
 
-boolean legitICArgs();
+boolean legitInstArg(char *);
 
-boolean numInRange(char *num);
+boolean numInRange(char *);
+
+int instructionInd(char *);
+
+boolean comptInstArg(char *);
+
+int instArgsCount(int);
+
+boolean isReg(char *);

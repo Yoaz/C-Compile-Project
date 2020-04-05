@@ -120,16 +120,13 @@ boolean splitLine(char *line)
                 }
             }
 
-            /* else, instruction command, check legit sytnax of arg as an instruction command arg */
+            /* else, instruction command, check legit current IC line provided args */
             if(!legitInstArg(arg -> name))
             {
                 return false;
             }   
-        }
-
-        /* rather args provided are a match to current command compatebility */
-        if(!comptInstnstArgs())
-            return false;  
+            
+        }  
     }
 
     if(pSpLine -> argsHead)
@@ -619,7 +616,7 @@ boolean parseCmd(char *restOfLine)
 
 
 /* compute rather arg is legit instrucion command arg */
-boolean legitInstArg(char *arg)
+boolean legitInstArgs(char *arg)
 {
     char *p;
 
@@ -681,7 +678,7 @@ boolean legitInstArg(char *arg)
 }
 
 
-/* Count the number of arg the command requires */
+/* Count the number of arg the operation needs. */
 int instArgsCount(int instInd)
 {
 	int i, count = 0;
@@ -699,7 +696,7 @@ int instructionInd(char *cmd)
 {
     int i;
 
-    /* loop through all instruction commands global struct array */
+    /* loop  loop through all instruction commands global struct array */
     for(i = 0; i < NUM_ARGS_ADRS; i++)
         if(!strcmp(cmd, pSpLine -> cmd))
             return i;

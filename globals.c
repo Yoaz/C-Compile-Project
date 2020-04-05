@@ -16,16 +16,23 @@ int successFiles; /* will count how many files went through the full assembler p
 spLine *pSpLine; /* global splitted line variable */
 
 
-
-/* define struct to hold opcodes and their binary value */
-struct operations{
-    char *name;
-    short binVal;
-}opcodes[OPCODES] = {
-    {"mov", 0000}, {"cmp", 0001}, {"add", 0010}, {"sub", 0011},
-    {"lea", 0100}, {"clr", 0101}, {"not", 0110}, {"inc", 0111},
-    {"dec", 1000}, {"jmp", 1001}, {"bne", 1010}, {"red", 1011},
-    {"prn", 1100}, {"jsr", 1101}, {"rts", 1110}, {"stop", 1111}
-};
+/* initiate global struct array with all instruction command corresponded to compitable arg type */
+ struct instructions ICS[NUM_INSTRUCTION_COMMANDS] /* Array of machine instruction */ = {
+	{"mov", {{IMMEDIATE, DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}, {DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}}},
+	{"cmp", {{IMMEDIATE, DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}, {IMMEDIATE, DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}}},
+	{"add", {{IMMEDIATE, DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}, {DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}}},
+	{"sub", {{IMMEDIATE, DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}, {DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}}},
+	{"lea", {{DIRECT,  NULL_METHOD}, {DIRECT,  REF_REG, DIRECT_REG, NULL_METHOD}}},
+	{"clr", {{NULL_METHOD}, {DIRECT,  REF_REG, DIRECT_REG, NULL_METHOD}}},
+	{"not", {{NULL_METHOD}, {DIRECT,  REF_REG, DIRECT_REG, NULL_METHOD}}},
+	{"inc", {{NULL_METHOD}, {DIRECT,  REF_REG, DIRECT_REG, NULL_METHOD}}},
+	{"dec", {{NULL_METHOD}, {DIRECT,  REF_REG, DIRECT_REG, NULL_METHOD}}},
+	{"jmp", {{NULL_METHOD}, {DIRECT, REF_REG, NULL_METHOD}}},
+	{"bne", {{NULL_METHOD}, {DIRECT, REF_REG, NULL_METHOD}}},
+	{"red", {{NULL_METHOD}, {DIRECT,  REF_REG, DIRECT_REG, NULL_METHOD}}},
+	{"prn", {{NULL_METHOD}, {IMMEDIATE, DIRECT, DIRECT_REG, NULL_METHOD}}},
+	{"jsr", {{NULL_METHOD}, {DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}}},
+	{"rts", {{NULL_METHOD}, {NULL_METHOD}}},
+	{"stop", {{NULL_METHOD}, {NULL_METHOD}}}};
 
 #endif

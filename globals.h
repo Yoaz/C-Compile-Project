@@ -14,13 +14,16 @@
 #define ESCAPED_BACKSLASH '\\'
 #define LINE_BREAK '\n'
 #define TOKEN_DELIM " \n" /* The splitter between the label, the operation, and the args */
+#define ARG_REF '*'
+#define ARG_IMMIDIET '#'
+#define ARG_REG 'r'
 
 #define MAX_FILE_NAME 30
 #define MAX_LINE_SIZE 81
 #define MAX_LABEL_SIZE 31
 #define TYPE_SIZE 8
-#define NUMBER_OF_LABELS 4
-#define OPCODES 15 
+#define NUM_ARGS_ADRS 16 
+#define NUM_INSTRUCTION_COMMANDS 16 
 
 #define DIR_DATA ".data"
 #define DIR_STRING ".string"
@@ -39,9 +42,9 @@ enum registers{NULL_REG= -1, RO, R1, R2, R3, R4, R5, R6, R7};
 /* ARE */
 typedef enum
 {
-	A_ABSOLUTE,
-	E_EXTERNAL,
-	R_RELOCATABLE
+	ABSOLUTE,
+	EXTERNAL,
+	RELOCATABLE
 } ARE;
 
 /* Types of instruction command line arguments */
@@ -53,16 +56,16 @@ typedef enum
 	DIRECT_REG,
 	REF_REG,
 	ADD_METHOD_COUNT
-} AddMethod;
+} argAddType;
 
 typedef enum
 {
 	UNDEFINED_SYMBOL = -1,
-	CODE,
-	DATA,
-	STRING,
-	ENTRY,
-	EXTERNAL
+	L_CODE,
+	L_DATA,
+	L_STRING,
+	L_ENTRY,
+	L_EXTERNAL
 } labelType;
 
 /* enum for different instruction commands */
@@ -86,6 +89,13 @@ typedef enum
 	RTS = 1110,
 	STOP = 1111
 } cmdType;
+
+/* define struct to hold instrucions and their accpeted args */
+struct instructions
+{
+	char *cmd;	/* the instruction command name */
+	argAddType addMethod[NUM_ARGS_ADRS][ADD_METHOD_COUNT + 1]; /* addressing method list */
+};
 
 /* arguments from each line stored in list arguments */
 typedef struct argNode
