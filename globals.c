@@ -7,11 +7,11 @@
 #include "globals.h"
 
 
-int IC;
-int DC;
-int numRow;
+int IC; /* instruction counter */
+int DC; /* data counter */
+int numRow; /* current file row index */
 int numColumn;
-int numOfErrors;
+int numOfErrors; /* counter for number of errors in each file loop */
 int successFiles; /* will count how many files went through the full assembler proccess with no errors */
 spLine *pSpLine; /* global splitted line variable */
 

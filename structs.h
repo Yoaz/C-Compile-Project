@@ -12,9 +12,9 @@
 
 
 
-extern int IC; /* instructions counter */
-extern int DC; /* data counter */
-extern int numOfErrors; /* number of errors */
+extern int IC; 
+extern int DC; 
+extern int numOfErrors; 
 extern spLine *pSpLine;
 
 
@@ -24,13 +24,12 @@ typedef struct labelNode{
    char *type; /* label type */
    int value; /* value of DC */
    struct labelNode *next; /* pointer to the next label */
-   
 }labelNode;
 
 /* global label tabel list head */
 labelNode *lblHead;
 
-/* last inserted label to save unesery list loop on new label insert */
+/* last inserted label to save unessecry list loop on new label insert */
 labelNode *lblLast;
 
 

@@ -18,14 +18,8 @@ extern DC;
 ********************************************* FUNCTION PROTOTYPE **********************************************
 \*                                                                                                           */
 
-/* reset all global vars */
+
 void resetGlobals();
-
-/* accpets argc and *argv[] from cmd input and initiate assmebler */
 void initiate(char *);
-
-/* starting a first round fetching lines from file and parse */
 boolean firstRound(FILE *);
-
-/* initiate second round in case first round was clean from errors */
 boolean secondRound(FILE *);

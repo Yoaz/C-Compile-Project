@@ -6,7 +6,7 @@
 #include "errors.h"
 
 
-extern numOfErrors; /* global file error counter */
+extern numOfErrors; 
 extern spLine *pSpLine;
 extern struct instructions ICS[NUM_INSTRUCTION_COMMANDS];
 
@@ -15,54 +15,33 @@ extern struct instructions ICS[NUM_INSTRUCTION_COMMANDS];
 ********************************************* FUNCTION PROTOTYPE **********************************************
 \*                                                                                                           */
 
-boolean fetchLabel(char *);
-
-/* The function checks wether a given char is a white char (exclude '\n') */
+/* general */
 boolean whiteCh(char);
-
-/* The function checks wether a given char is a white char (exclude '\n') */
-boolean relevantToCheck(char *);
-
-/* checks if a given lable string is not a saved word of assembly */
-boolean isInstType(char *);
-
-boolean isDirType(char *);
-
 void resetSpLine(spLine *);
-
-boolean fetchLable(char *);
-
-boolean isLabel(char *);
-
-boolean isNumber(char *arg);
-
-/* checks if a given lable is valid string syntax */
-boolean isLegitLabel(char *);
-
-boolean parseData(char *);
-
-boolean parseExternEntry(char *);
-
-boolean parseString(char *);
-
+boolean relevantToCheck(char *);
 boolean addArgToArgList(char *);
 
+/* label */
+boolean fetchLabel(char *);
+boolean isLabel(char *);
+boolean isLegitLabel(char *);
+boolean isInstType(char *);
+boolean isDirType(char *);
+
+/* directive */
+boolean parseString(char *);
+boolean parseData(char *);
+boolean parseExternEntry(char *);
+boolean legitDataArg(char *);
+
+/* instruction */
+boolean isNumber(char *arg);
 boolean parseInst(char *);
-
 boolean legitInstArg(char *);
-
 boolean numInRange(char *);
-
 int getInstructionI(char *);
-
 boolean comptInstArg(char *);
-
 int instArgsCount(int);
-
 boolean isReg(char *);
-
-boolean fetchArgs(char *restOfLine);
-
-boolean legitDataArg(char *arg);
-
+boolean fetchArgs(char *);
 boolean legitNumInstArgs();

@@ -372,7 +372,7 @@ boolean parseData(char *restOfLine)
 }
 
 
-
+/* compute rather .data argument provided via line is legit -> number and in range */
 boolean legitDataArg(char *arg)
 {
 
@@ -507,9 +507,6 @@ boolean parseExternEntry(char *restOfLine)
 
 
 
-
-
-
 /*                                                                                                           *\
 ***************************************************************************************************************                                                                                                         
                                             INSTRUCTION PARSING 
@@ -589,7 +586,8 @@ boolean fetchArgs(char *restOfLine)
 
 			if (restOfLine[i] == COMMA) /* There is no arg */
 			{
-				printf("Illegal SEPARATOR. \n");
+				printError(ILLEGAL_ARG_SEP);
+                numOfErrors++;
 				return false;
 			}
 			else /* The start of the arg */
@@ -606,7 +604,7 @@ boolean fetchArgs(char *restOfLine)
 				argLen = i - startI;
                 temp = (char *)	safeAlloc(sCalloc,(argLen + 1), sizeof(char));																  /* i is the place in the line where the arg ends. */
 				temp = strncpy(temp, restOfLine + startI, argLen); /* +1 for the null-terminator */
-				temp[argLen] = '\0';																  /* Adds the null terminator to the end of the line. */
+				temp[argLen] = '\0';  /* Adds the null terminator to the end of the line. */
                 if(!addArgToArgList(temp))
                 {
                     free(temp);
@@ -633,7 +631,7 @@ boolean fetchArgs(char *restOfLine)
 				status = waitForArg;
 			else /* There is an arg before separator! */
 			{
-				printf("Missing SEPARATOR! \n");
+				printError(MISSING_ARG_SEP);
                 numOfErrors++;
 				return false;
 			}
@@ -642,7 +640,7 @@ boolean fetchArgs(char *restOfLine)
 
 	if(status == waitForArg) /* There is a separator at the end of the line */
 	{
-		printf("Illegal SEPARATOR. \n");
+		printError(ILLEGAL_ARG_SEP);
         numOfErrors++;
 		return false;
 	}
@@ -748,15 +746,14 @@ boolean legitNumInstArgs()
     /* else num of privided args > 0 */
     argsCount = instArgsCount(getInstructionI(pSpLine -> cmd)); /* return num of args the current instruction requires */
 
-
-    if(argsCount > pSpLine -> numArgs)
+    if(argsCount < pSpLine -> numArgs) /* too many arguments provided via line for this cmd */
     {
         numOfErrors++;
         printError(TOO_MANY_ARGS);
         return false;
     }
     
-    if(argsCount < pSpLine -> numArgs)
+    if(argsCount > pSpLine -> numArgs) /* too few arguments provided via line for this cmd */
     {
         numOfErrors++;
         printError(TOO_FEW_ARGS);
@@ -808,7 +805,7 @@ boolean comptInstArg(char *arg)
 
     argAddType a;
 
-    if(!arg)
+    if(!arg) /* safety major */
         return false;
 
     a = whichAddArgType(arg);
@@ -829,7 +826,7 @@ boolean isNumber(char *arg)
 {
 	char *p = arg; 
 
-    if(!arg)
+    if(!arg) /* safety major */
         return false;
 
 	if(*p != '+' && *p != '-' && !isdigit(*p)) /* Number can have a sign of + or -, it's absolute. */
@@ -844,15 +841,15 @@ boolean isNumber(char *arg)
 
 
 /* 
-* Checks if arg num is in range for instruction commands: 
+* Checks if arg num is in range for instruction commands or for .data directive: 
 * for .data should be between -16384 - 16383 (15bits), 
-* for rest -2048 - 2047 (12bits).
+* for instructions -2048 - 2047 (12bits).
 */
 boolean numInRange(char *num)
 {
     signed long tmp;
 
-    if(!num)
+    if(!num) /* safety major */
         return false;
 
     tmp = atoi(num);
@@ -881,7 +878,7 @@ boolean isReg(char *arg)
 {
     char *p;
 
-    if(!arg)
+    if(!arg) /* safety major */
         return false;
     
     if(!(
@@ -889,18 +886,30 @@ boolean isReg(char *arg)
       strcmp(arg,"r5") && strcmp(arg,"r6") && strcmp(arg,"r7") 
       ))
         return true;
-
         
 return false;    
 }
 
 
-/* Finds addressing method of argument. */
+/* 
+* compute which addressing arg type the argument is,
+* is used with VALID argument sent, therefore, for sure one of valid options
+*/
 argAddType whichAddArgType(char *arg)
 {
+    if(!arg) /* no argument, safety major */
+		return NULL_METHOD;
+    
+    if(*arg == ARG_IMMIDIET) /* '#+number' */
+        return IMMEDIATE;
 
+	if(isReg(arg)) /* 'r0-r7' */
+		return DIRECT_REG;
 
-	/* If the argument is not one of the options above, then it's 'DIRECT' */
+	if(*arg == ARG_REF && isReg(arg+1)) /* '*r0 - *r7' */
+		return REF_REG;
+
+	/* default -> label */
 	return DIRECT;
 }
 

@@ -186,6 +186,13 @@ void printError(errorList errorTitle, ...)
         case EXTRA_INPUT:
             fprintf(stderr,"ERROR[%d,%d]: \"%s\" is an extraneous input in line\n",numRow,numColumn, va_arg(ap, char *));
             break;
+        case MISSING_ARG_SEP:
+            fprintf(stderr,"ERROR[%d,%d]: Missing argument comma (,) separator\n",numRow,numColumn);
+            break;
+        case ILLEGAL_ARG_SEP:
+            fprintf(stderr,"ERROR[%d,%d]: Illegal argument comma (,) separator\n",numRow,numColumn);
+            break;
+
     }
     va_end(ap);
 }
