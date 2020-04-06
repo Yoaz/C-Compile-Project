@@ -502,7 +502,7 @@ boolean parseCmd(char *restOfLine)
         if(!strcmp(pSpLine -> cmd, DIR_DATA))
             printError(MISSING_DATA);
         else    
-            printError(MISSING_OPERAND);
+            printError(MISSING_ARG);
         return false;
     }
 
@@ -598,7 +598,7 @@ boolean parseCmd(char *restOfLine)
         if(!strcmp(pSpLine -> cmd, DIR_DATA))
             printError(MISSING_DATA);
         else    
-            printError(MISSING_OPERAND);
+            printError(MISSING_ARG);
         return false;
     }
 
@@ -684,7 +684,7 @@ int instArgsCount(int instInd)
 	int i, count = 0;
 
 	for(i = 0; i < NUM_ARGS_ADRS; i++)
-		if (ICS[instInd].addMethod[i][0] != NULL_METHOD)
+		if (ICS[instInd].addType[i][0] != NULL_METHOD)
 			count++;
 
 	return count;
@@ -692,7 +692,7 @@ int instArgsCount(int instInd)
 
 
 /* return the instruction index in the ICS global struct array */
-int instructionInd(char *cmd)
+int getInstructionI(char *cmd)
 {
     int i;
 

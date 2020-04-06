@@ -47,6 +47,14 @@ typedef enum
 	RELOCATABLE
 } ARE;
 
+/* Addressing types */
+typedef enum
+{
+	ADD_SRC = 0,
+	ADD_DEST = 1,
+	ADD_TYPE_COUNT
+} AddType;
+
 /* Types of instruction command line arguments */
 typedef enum
 {
@@ -55,7 +63,8 @@ typedef enum
 	DIRECT,
 	DIRECT_REG,
 	REF_REG,
-	ADD_METHOD_COUNT
+	LABEL,
+	ARG_TYPE_COUNT
 } argAddType;
 
 typedef enum
@@ -94,7 +103,7 @@ typedef enum
 struct instructions
 {
 	char *cmd;	/* the instruction command name */
-	argAddType addMethod[NUM_ARGS_ADRS][ADD_METHOD_COUNT + 1]; /* addressing method list */
+	argAddType addType[ARG_TYPE_COUNT][ARG_TYPE_COUNT + 1]; /* addressing method list */
 };
 
 /* arguments from each line stored in list arguments */

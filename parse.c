@@ -91,47 +91,20 @@ boolean splitLine(char *line)
             return false;
     }
 
-    else /* other operations use the normal seperator */
+    else if(!strcmp(token, DIR_DATA)) /* this is a .data directive */
     {
-        if(!parseCmd(strtok(NULL, ""))) /* parse for .data and all instructions cmd's */
+        if(!parseData(strtok(NULL, ""))) /* parse for .data dir cmd, if errors ocurred return false */
             return false;
-
-        /* TODO: check num of args for each command */
-        if(!pSpLine -> argsHead) /* for instructions with 0 operands requirement  ('stop' in ex.) */
-            return true; 
-
-
-        /* arguments legit check for .data directive or instruction commands that requires at least 1 operand accordingly */
-        for (arg = pSpLine -> argsHead; arg; arg = arg -> next)  
-        {
-            if(!strcmp(pSpLine -> cmd, DIR_DATA))
-            {
-                /* check arg is a number */
-                if(!isNumber(arg -> name))
-                {
-                    printError(DATA_INVALID, arg -> name);
-                    return false;
-                }
-                /* check num range valid for 15bits size */
-                if(!numInRange(arg -> name))
-                {
-                    printError(NUM_RANGE, arg -> name);
-                    return false;
-                }
-            }
-
-            /* else, instruction command, check legit sytnax of arg as an instruction command arg */
-            if(!legitInstArg(arg -> name))
-            {
-                return false;
-            }   
-        }
-
-        /* rather args provided are a match to current command compatebility */
-        if(!comptInstnstArgs())
-            return false;  
+        
     }
 
+    else /* other operations use the normal seperator */
+    {
+        if(!parseInst(strtok(NULL, ""))) /* parse for .data and all instructions cmd's */
+            return false;
+    }
+
+    /* debug */
     if(pSpLine -> argsHead)
         printArgTabel();
 
@@ -174,7 +147,7 @@ boolean whiteCh(char ch)
 /* free splitted line global var */
 void resetSpLine(spLine *p)
 {
-    argNode *a; /* for args list reset */
+    argNode *a, *b; /* for args list reset */
 
     if(p)
 	{
@@ -185,15 +158,17 @@ void resetSpLine(spLine *p)
             free(p -> cmd);
         if(p -> argsHead)
         {
-            for (a = p -> argsHead; a -> next; a = a -> next) 
+            a = p -> argsHead;
+            while(a)
             {
-                p = a -> next;
+                b = a -> next;
                 free(a);
-                a = p;
+                a = b;        
             }
-
-            p ->  numArgs = 0;
         }
+        
+        p ->  numArgs = NULL;
+        
         free(p);
     }
     
@@ -296,7 +271,8 @@ boolean fetchLabel(char *token)
 /* Checks if a token is a label definition. */
 boolean isLabel(char *token)
 {   
-    if(token[strlen(token)-1] == COLON){
+    if(token[strlen(token)-1] == COLON)
+    {
         printf("This is a label: %s\n", token);
         return true;
     }
@@ -368,53 +344,60 @@ boolean isLegitLabel(char *label)
 ***************************************************************************************************************
 \*                                                                                                           */
 
-
-/* will parse rest of line with cmd: .entry/.extern directives */
-boolean parseExternEntry(char *restOfLine)
+                                                                                                    
+/* will parse rest of line with cmd: .data directives */
+boolean parseData(char *restOfLine)
 {
-    char *token;
-
-    if(pSpLine -> lblFlag == true) /* use of label with .extern/.entry -> issue a warning (not an error) */
-        printError(LABEL_ENTRY_EXTERN, pSpLine -> label);
-
-    if(!restOfLine) /* missing label */
+    argNode *arg; /* for use - run on args */
+    
+    if(!fetchArgs(restOfLine)) /* syntax issue with input line arguments segment */
+        return false;
+    
+    /* now we'll check matching provided args count vs current command args count requirement */
+    if(pSpLine -> numArgs == 0) /* quick check for unique case of 0 args from line (fetchArgs() assign this property) */
     {
         numOfErrors++;
-        printError(MISSING_LBL);
+        printError(MISSING_DATA);
         return false;
     }
 
-    token = strtok(restOfLine, TOKEN_DELIM);
-
-    /* next part should be label */
-    if(!isLegitLabel(token)) /* extry/entry label is illegal return false */
+    /* arguments legit check for .data directive, we already know numArgs > 0 since early check case of numArgs == 0 -> argsHead != NULL */
+    for(arg = pSpLine -> argsHead; arg; arg = arg -> next) 
     {
-        numOfErrors++;
-        return false;
+        if(!legitDataArg(arg -> name)) /* check arg is a valid number and in range for .data command */
+            return false;
     }
-
-    /* add the arguement to the splittedLine global var */
-    if(!addArgToArgList(token))
-    {
-        return false;
-    }
-
-    /* no more input in line (only one legit label after .entry/.extern) is allowed */
-    if(token = strtok(NULL, ""))
-    {
-        numOfErrors++;
-        printError(EXTRA_INPUT, token);
-        return false;
-    }
-
-    pSpLine ->  numArgs = 1; 
-
 
     return true;
 }
 
 
-/* parse .string arguments */
+
+boolean legitDataArg(char *arg)
+{
+
+    if(!arg) /* safety major */
+        return false;
+    
+    /* check arg is a number */
+    if(!isNumber(arg))
+    {
+        printError(DATA_INVALID, arg);
+        return false;
+    }
+
+    /* check num range valid for 15bits size */
+    if(!numInRange(arg))
+    {
+        printError(NUM_RANGE, arg);
+        return false;
+    }
+
+    return true;
+}
+
+
+/* will parse rest of line with cmd: .string directives */
 boolean parseString(char *restOfLine)
 {
     char *temp, *firstQuot, *secondQuot;
@@ -478,8 +461,105 @@ boolean parseString(char *restOfLine)
 }
 
 
-/* parse .data & instruction command arguments ISSUE: when .data odd num of arguments + error (illegal comma, not a number argument -> segmentation error) */
-boolean parseCmd(char *restOfLine)
+/* will parse rest of line with cmd: .entry/.extern directives */
+boolean parseExternEntry(char *restOfLine)
+{
+    char *token;
+
+    if(pSpLine -> lblFlag == true) /* use of label with .extern/.entry -> issue a warning (not an error) */
+        printError(LABEL_ENTRY_EXTERN, pSpLine -> label);
+
+    if(!restOfLine) /* missing label */
+    {
+        numOfErrors++;
+        printError(MISSING_LBL);
+        return false;
+    }
+
+    token = strtok(restOfLine, TOKEN_DELIM);
+
+    /* next part should be label */
+    if(!isLegitLabel(token)) /* extry/entry label is illegal return false */
+    {
+        numOfErrors++;
+        return false;
+    }
+
+    /* add the arguement to the splittedLine global var */
+    if(!addArgToArgList(token))
+    {
+        return false;
+    }
+
+    /* no more input in line (only one legit label after .entry/.extern) is allowed */
+    if(token = strtok(NULL, ""))
+    {
+        numOfErrors++;
+        printError(EXTRA_INPUT, token);
+        return false;
+    }
+
+    pSpLine ->  numArgs = 1; 
+
+
+    return true;
+}
+
+
+
+
+
+
+/*                                                                                                           *\
+***************************************************************************************************************                                                                                                         
+                                            INSTRUCTION PARSING 
+***************************************************************************************************************
+\*                                                                                                           */
+
+
+/* parse instruction command arguments */
+boolean parseInst(char *restOfLine)
+{
+    argNode *arg; /* for use - run on args */
+    
+    if(!fetchArgs(restOfLine)) /* syntax issue with input line arguments segment */
+        return false;
+
+    /* now we'll check matching provided args count vs current command args count requirement */
+    if(pSpLine -> numArgs == 0) /* quick check for unique case of 0 args from line (fetchArgs() assign this property) */
+    {
+        /* check with commands: 'stop', 'jsr' - that requires no arguments at all */
+        if((!strcmp(pSpLine -> cmd, "stop") || !strcmp(pSpLine ->  cmd, "rts")))
+                return true;
+
+        /* else, rest of commands requires at least 1 args, missing arg */
+        numOfErrors++;
+        printError(MISSING_ARG);
+        return false;
+    }
+    
+     
+    if(!legitNumInstArgs()) /* too many/too little arguments for this current command */
+        return false;
+
+    /* arguments legit check for instruction commands that requires at least 1 arg */
+    for(arg = pSpLine -> argsHead; arg; arg = arg -> next) /* we know there is at least 1 arg since early check case of numArgs == 0 */
+    { 
+        if(!legitInstArg(arg -> name) || !comptInstArg(arg -> name)) /* check legit instruction arg syntax and compitable with current command arg */
+        return false; 
+    }
+    
+
+    return true;
+    
+}
+
+
+/* 
+* fetch args for instruction commands and for .data directive command
+* ISSUE: when .data odd num of arguments + error (illegal comma, not a number argument -> segmentation error) 
+*/
+boolean fetchArgs(char *restOfLine)
 {
     int argc=0, argLen=0;
     char *temp;
@@ -496,17 +576,8 @@ boolean parseCmd(char *restOfLine)
 
     if(!restOfLine) /* no args data */
     {
-        
-        if(!strcmp(pSpLine -> cmd, "stop") || !strcmp(pSpLine ->  cmd, "rts")) /* no args for these commands is correct */
-            return true;
-        
-        numOfErrors++; /* else, it is an error */
-        
-        if(!strcmp(pSpLine -> cmd, DIR_DATA))
-            printError(MISSING_DATA);
-        else    
-            printError(MISSING_OPERAND);
-        return false;
+        pSpLine -> numArgs = argc;
+        return true;
     }
 
 	for (i = 0; restOfLine[i]; i++) /* Run on the line, char by char */
@@ -539,7 +610,8 @@ boolean parseCmd(char *restOfLine)
                 if(!addArgToArgList(temp))
                 {
                     free(temp);
-                    return false;
+                    puts("ISSUE ADDING ARG TO LIST");
+                    exit(1);
                 }
 
                 argLen = 0;
@@ -562,19 +634,20 @@ boolean parseCmd(char *restOfLine)
 			else /* There is an arg before separator! */
 			{
 				printf("Missing SEPARATOR! \n");
+                numOfErrors++;
 				return false;
 			}
 		}
 	}
 
-	if (status == waitForArg) /* There is a separator at the end of the line */
+	if(status == waitForArg) /* There is a separator at the end of the line */
 	{
 		printf("Illegal SEPARATOR. \n");
-        
+        numOfErrors++;
 		return false;
 	}
 
-	else if (status == readArg) /* There is arg at the end of the line */
+	else if(status == readArg) /* There is arg at the end of the line */
     {
         /* copy the arg to an allocated "string" */
         argLen = i - startI;
@@ -584,25 +657,13 @@ boolean parseCmd(char *restOfLine)
         if(!addArgToArgList(temp))
         {
             free(temp);
-            return false;
+            puts("ISSUE ADDING ARG TO LIST");
+            exit(1);
         }
 
         argLen = 0;
         ++argc;
         free(temp);
-    }
-
-	else if (argc == 0) /* line wasnt empty, but had white chars and no args  */
-    {
-        if(!strcmp(pSpLine -> cmd, "stop") || !strcmp(pSpLine ->  cmd, "rts"))
-            return true;
-        
-        numOfErrors++;
-        if(!strcmp(pSpLine -> cmd, DIR_DATA))
-            printError(MISSING_DATA);
-        else    
-            printError(MISSING_OPERAND);
-        return false;
     }
 
     pSpLine -> numArgs = argc; /* assign num of args to global splitted var */
@@ -611,14 +672,7 @@ boolean parseCmd(char *restOfLine)
 }
 
 
-/*                                                                                                           *\
-***************************************************************************************************************                                                                                                         
-                                            INSTRUCTION PARSING 
-***************************************************************************************************************
-\*                                                                                                           */
-
-
-/* compute rather arg is legit instrucion command arg */
+/* compute rather arg syntax is legit instrucion command arg syntax */
 boolean legitInstArg(char *arg)
 {
     char *p;
@@ -626,58 +680,90 @@ boolean legitInstArg(char *arg)
     if(!arg)
         return false;
 
-    if(strlen(arg) < 2) /* args must be 2+ in size */
+    p = arg;
+
+    /* unique cases for args that starts with one of the following: '#, *'  and then the rest */
+    switch(*p)
+    {
+        case ARG_IMMIDIET: /* imidiet? */
+            if(strlen(p) < 2) /* missing number after '#' symbol */
+            {
+                numOfErrors++;
+                printError(IMMIDIET_SYNTAX, p);
+                return false;
+            }
+            if(!isNumber(p+1)) /* after '#' must come valid number, we know strlen(p) >= 2 */
+            {
+                numOfErrors++;
+                printError(IMMIDIET_SYNTAX, p);
+                return false;
+            }
+            if(!numInRange(p+1)) /* if num in range for 12bits */
+            {
+                printError(NUM_RANGE, (*(p+1)));
+                return false;
+            }
+            break; /* legit immidiet arg, break */
+
+        case ARG_REF: /* refferenced register? */
+            if(strlen(p) < 2) /* missing number after '#' symbol */
+            {
+                numOfErrors++;
+                printError(INVALID_REG_REF_SYNT, p);
+                return false;
+            }
+            if(!isReg(p+1))
+            {
+                numOfErrors++;
+                printError(INVALID_REG_REF_SYNT, p);
+                return false;
+            }
+            break; /* legit refference register */
+
+        default: /* might be direct register or simply a label */
+            if(isReg(p))
+                break; /* legit direct register */
+            
+            if(!isLegitLabel(arg)) /* label as an arg */
+                return false;
+            else
+                break; /* legit label arg */
+            
+            /* all other case, invalid instruction argument */
+            numOfErrors++;
+            printError(INVALID_INST_ARG, p);
+            return false;    
+    }
+
+    return true;
+
+}
+
+
+/* compute rather num of line provided args matches the requirement of current instruction command accepted args count */
+boolean legitNumInstArgs()
+{
+    int argsCount; /* holds the amount of accepted args for the command */
+
+    /* else num of privided args > 0 */
+    argsCount = instArgsCount(getInstructionI(pSpLine -> cmd)); /* return num of args the current instruction requires */
+
+
+    if(argsCount > pSpLine -> numArgs)
     {
         numOfErrors++;
-        printError(INVALID_INST_ARG, p);
+        printError(TOO_MANY_ARGS);
+        return false;
+    }
+    
+    if(argsCount < pSpLine -> numArgs)
+    {
+        numOfErrors++;
+        printError(TOO_FEW_ARGS);
         return false;
     }
 
-    p = arg;
-
-	if( (*p == ARG_REG) && (*p == ARG_IMMIDIET) && (*p == ARG_REF) ) /* args that starts with one of the following: '#, r, *' */
-    {
-        switch(*p)
-        {
-            case ARG_REG:
-                if(!isdigit(*(++p)) || strlen(p) > 2)
-                {
-                    numOfErrors++;
-                    printError(INVALID_REG_SYNT, p);
-                    return false;
-                }
-                if(atoi(*(++p)) > 7 || atoi(*(++p)) < 0)
-                {
-                    numOfErrors++;
-                    printError(INVALID_REG_RANGE, p);
-                    return false;   
-                }
-                break;
-            case ARG_IMMIDIET:
-                if(!isNumber(*(++p))) /* after '#' must come valid number */
-                {
-                    numOfErrors++;
-                    printError(IMMIDIET_SYNTAX, p);
-                    return false;
-                }
-                break;
-            case ARG_REF:
-                if(!isReg(p))
-                {
-                    numOfErrors++;
-                    printError(INVALID_REG_REF_SYNT, p);
-                    return false;
-                }
-
-        }
-
-        if(!isLegitLabel(arg)) /* label as an arg */
-            return false;
-
-
-    }
-    return true;
-
+    return true; 
 }
 
 
@@ -686,23 +772,30 @@ int instArgsCount(int instInd)
 {
 	int i, count = 0;
 
-	for(i = 0; i < NUM_ARGS_ADRS; i++)
-		if (ICS[instInd].addMethod[i][0] != NULL_METHOD)
+	for(i = 0; i < ADD_TYPE_COUNT; i++)
+		if(ICS[instInd].addType[i][0] != NULL_METHOD)
 			count++;
+
+    printf("This command requires %d args.\n", count); /* debug */
 
 	return count;
 }
 
 
 /* return the instruction index in the ICS global struct array */
-int instructionInd(char *cmd)
+int getInstructionI(char *cmd)
 {
     int i;
 
     /* loop through all instruction commands global struct array */
     for(i = 0; i < NUM_ARGS_ADRS; i++)
-        if(!strcmp(cmd, pSpLine -> cmd))
+    {
+        if(!strcmp(ICS[i].cmd, cmd))
+        {
+            printf("This is the command index %d\n", i); /* debug */
             return i;
+        }
+    }
     
     return -1; /* no such instruction command, safety major */
 }
@@ -711,10 +804,23 @@ int instructionInd(char *cmd)
 /* compute rather arg is compitable with the curent line command capabilities */
 boolean comptInstArg(char *arg)
 {
+    int i, instI;
+
+    argAddType a;
+
     if(!arg)
         return false;
-    
-    return true;
+
+    a = whichAddArgType(arg);
+    instI = getInstructionI(pSpLine -> cmd);
+
+    for(i = 0; i < NUM_ARGS_ADRS; i++)
+    {
+        if(ICS[instI].addType[i][0] != NULL_METHOD)
+        return true;
+    }
+
+    return false;
 }
 
 
@@ -782,9 +888,19 @@ boolean isReg(char *arg)
       strcmp(arg,"r0") && strcmp(arg,"r1") && strcmp(arg,"r2") && strcmp(arg,"r3") && strcmp(arg,"r4") &&
       strcmp(arg,"r5") && strcmp(arg,"r6") && strcmp(arg,"r7") 
       ))
-        return false;
+        return true;
 
         
-return true;
-    
+return false;    
 }
+
+
+/* Finds addressing method of argument. */
+argAddType whichAddArgType(char *arg)
+{
+
+
+	/* If the argument is not one of the options above, then it's 'DIRECT' */
+	return DIRECT;
+}
+

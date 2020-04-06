@@ -39,22 +39,30 @@ boolean isNumber(char *arg);
 /* checks if a given lable is valid string syntax */
 boolean isLegitLabel(char *);
 
+boolean parseData(char *);
+
 boolean parseExternEntry(char *);
 
 boolean parseString(char *);
 
 boolean addArgToArgList(char *);
 
-boolean parseCmd(char *);
+boolean parseInst(char *);
 
 boolean legitInstArg(char *);
 
 boolean numInRange(char *);
 
-int instructionInd(char *);
+int getInstructionI(char *);
 
 boolean comptInstArg(char *);
 
 int instArgsCount(int);
 
 boolean isReg(char *);
+
+boolean fetchArgs(char *restOfLine);
+
+boolean legitDataArg(char *arg);
+
+boolean legitNumInstArgs();

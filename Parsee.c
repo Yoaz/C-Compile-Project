@@ -2,10 +2,13 @@
 /* parse .data & instruction command arguments ISSUE: when .data odd num of arguments + error (illegal comma, not a number argument -> segmentation error) */
 boolean parseCmd(char *restOfLine)
 {
+    int argc=0, argLen=0;
+    char *temp;
+    
     if(!fetchArgs(restOfLine)) /* syntax issue with input line arguments segment */
         return false;
 
-    if(pSpLine -> numArgs == 0) /* quick check for unique case of 0 args from line */
+    if(pSpLine -> numArgs == 0) /* quick check for unique case of 0 args from line (fetchArgs() assign this property) */
     {
     /* check with commands: 'stop', 'jsr' - that requires no arguments at all */
     if((!strcmp(pSpLine -> cmd, "stop") || !strcmp(pSpLine ->  cmd, "rts")))
@@ -18,11 +21,11 @@ boolean parseCmd(char *restOfLine)
     else    
         printError(MISSING_OPERAND);
     return false;
-    }}
+    }
 
     
     /* arguments legit check for .data directive or instruction commands that requires at least 1 operand accordingly */
-    for (arg = pSpLine -> argsHead; arg; arg = arg -> next)  
+    for(arg = pSpLine -> argsHead; arg; arg = arg -> next)  
     {
         if(!strcmp(pSpLine -> cmd, DIR_DATA))
         {
@@ -30,16 +33,18 @@ boolean parseCmd(char *restOfLine)
                 return false;
         }
 
-        /* else it is an insturction command (exclude stop and jsr) */
+        /* else it is an insturction command */
         if(!legitInstArg(*arg) || !comptInstArg(*arg)) /* check legit instruction arg syntax and compitable with current command arg */
             return false; 
     }
 
-    /* check match num args provided in line with command accepted num of args */
+    if(!strcmp(pSpLine -> cmd, DIR_DATA)) /* if .data and passed args syntax check + legit args, return true */
+        return true;
+
+    /* else instruction command, check match num args provided in line with command accepted num of args */
+    if(!strcmp(pSpLine -> cmd))
     
 }
-
-
 
 
 boolean legitDataArg(char *arg)

@@ -160,20 +160,20 @@ void printError(errorList errorTitle, ...)
 
         /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ INSTRUCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
         /* general */
-        case MISSING_OPERAND: /* warning for use of label with .entry or .extern */
+        case MISSING_ARG: /* missing operand for instruction command */
             fprintf(stderr,"ERROR[%d,%d]: Missing operand\n",numRow,numColumn);
             break;
+        case TOO_MANY_ARGS: /* warning for use of label with .entry or .extern */
+            fprintf(stderr,"ERROR[%d,%d]: Too many args for this command\n",numRow,numColumn);
+            break;  
+        case TOO_FEW_ARGS: /* warning for use of label with .entry or .extern */
+            fprintf(stderr,"ERROR[%d,%d]: Too few args for this command\n",numRow,numColumn);
+            break;  
         case INVALID_INST_ARG:
             fprintf(stderr,"ERROR[%d,%d]: Invalid instruction command arg \"%s\"\n",numRow,numColumn, va_arg(ap, char *));
             break; 
-        case INVALID_REG_SYNT:
-            fprintf(stderr,"ERROR[%d,%d]: Invalid register syntax arg \"%s\"\n",numRow,numColumn, va_arg(ap, char *));
-            break; 
         case INVALID_REG_REF_SYNT:
             fprintf(stderr,"ERROR[%d,%d]: Invalid reference to register syntax arg \"%s\"\n",numRow,numColumn, va_arg(ap, char *));
-            break;  
-        case INVALID_REG_RANGE:
-            fprintf(stderr,"ERROR[%d,%d]: Invalid register arg range \"%s\"\n",numRow,numColumn, va_arg(ap, char *));
             break;     
         case IMMIDIET_SYNTAX:
             fprintf(stderr,"ERROR[%d,%d]: Wrong immidiet arg type \"%s\"\n",numRow,numColumn, va_arg(ap, char *));

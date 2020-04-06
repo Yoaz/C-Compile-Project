@@ -10,7 +10,9 @@
             "name": "Debug",
             "program": "${workspaceFolder}/assembler",
             "args": ["ps2"],
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": true,
+            "sourceLanguages": ["rust"]
         }
     ]
 }
