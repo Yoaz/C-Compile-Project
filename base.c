@@ -75,21 +75,38 @@ boolean firstRound(FILE *fp)
             continue; /* if error occur during splitLine() then errors in line */
         }
         
-        /* splitLine with no errors -> if label exist, insert to label table */
+        /* splitLine with no errors -> if label exist */
         if(pSpLine -> lblFlag)
         {
-            /* if(!strcmp(pSpLine -> cmd, DIR_ENTRY || !strcmp(pSpLine -> cmd, DIR_EXTERN)))
-            {
-                    printError(LABEL_ENTRY_EXTERN, pSpLine -> label); /* print warning for label with .entry/.extern
-                    continue; /* don't add label to label table as per assembly rules
-            } */
-            addLabel(); /* add to label table */
+            /* .entry/.extern label use is avoided - warning issued for this kind of use */
+            if(strcmp(pSpLine -> cmd, DIR_ENTRY) && strcmp(pSpLine -> cmd, DIR_EXTERN)) 
+                addLabel(); /* all the rest of commands, add to label table */
         }
+
+        /* .string directive */
+        if(!strcmp(pSpLine -> cmd, DIR_DATA))
+        {
+
+        }
+        
+        /* .data directive */
+        else if(!strcmp(pSpLine -> cmd, DIR_DATA))
+        {
+
+        }
+
+        /* instruction type of command */
+        else
+        {
+            
+        }
+
         
         free(line);  /* free alocated memory for line, to free room for next line if exist */
     }
     
     printLblTabel(); /* debug */
+
     /* if found errors in current file, first round failed, return false */
     if(numOfErrors)
         return false;

@@ -153,3 +153,50 @@ void printArgTabel()
    puts("\n");
    
 }
+
+/*                                                                                                           *\
+***************************************************************************************************************                                                                                                         
+                                                WORD STRUCTS 
+***************************************************************************************************************
+\*                                                                                                           */
+
+
+/* compute how much memory (word) each instruction operand requires, 0.5 - reg, others 1 */
+float opMemReq(char *op)
+{
+	if(whichAddArgType(op) == DIRECT_REG || whichAddArgType(op) == REF_REG) /* DIRECT_REG - 'r0-7', REF_REG '*r0-7' type */
+      return 0.5;
+
+	return 1; /* IMMIDIET - '#', DIRECT - 'label address' requires 1 */
+}
+
+/* compute how much memory (word) each input line requires, default is 1 as we always need at least 1 */
+float instLineMemReq()
+{
+   int wordsCnt = 1; /* words counter */
+   argNode *p; /* run on line arguments */
+
+   if(!pSpLine || !pSpLine -> argsHead) /* safety major */
+      return 0; 
+
+   for(p = pSpLine -> argsHead; p; p = p -> next) /* Run on the args, max run is 2 as max args for instruction is 2 */
+			wordsCnt += opMemReq(p -> name); /* sum the words required based on arguments from line */
+
+   return wordsCnt;
+}
+
+
+/* increase global var IC by how much current instruction line memory requirement */
+void increaseIC()
+{
+   IC += ceil(instLineMemReq()); /* we use ceil for cases such 'add r1, #-3',
+                                 instLineMemReq() will preduce 2.5 words, though
+                                 actually requires 3 words */
+}
+
+
+/* will create the first word for instruction commands */
+void firstWord()
+{
+
+}

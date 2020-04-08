@@ -35,7 +35,7 @@ boolean parseExternEntry(char *);
 boolean legitDataArg(char *);
 
 /* instruction */
-boolean isNumber(char *arg);
+boolean isNumber(char *);
 boolean parseInst(char *);
 boolean legitInstArg(char *);
 boolean numInRange(char *);
@@ -45,3 +45,4 @@ int instArgsCount(int);
 boolean isReg(char *);
 boolean fetchArgs(char *);
 boolean legitNumInstArgs();
+argAddType whichAddArgType(char *);
