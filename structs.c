@@ -10,20 +10,35 @@
 \*                                                                                                           */
 
 
-/* Add a new symbol to the symbol-table from global splitted line var (pointer) fetched data */
+/* 
+* Add a new label to the label-table from global splitted line var (pointer) fetched data
+* This func is being called after full line parse has commited, therefore, line is 100% legit 
+* and SplittedLine global var has all the paramaters assigned to its struct members 
+*/
 void addLabel()
 {
 	labelNode *p; 
 
 	p = (labelNode *)safeAlloc(sCalloc, 1, sizeof(struct labelNode)); /* allocate mem for 1 lbl node */
-   *p = (labelNode){0}; /* double making sure all struct fields will be reset to 0/null (inspite of using calloc()) */
+   *p = (labelNode){0}; /* double making sure all struct fields will be reset to 0/null (on top of using calloc()) */
 
-   p -> name = (char*)safeAlloc(sMalloc, strlen(pSpLine -> label)+1); /* +1 for the null-terminator */
+   p -> name = (char *)safeAlloc(sMalloc, strlen(pSpLine -> label)+1); /* +1 for the null-terminator */
    p -> name = strcpy(p -> name, pSpLine -> label); /* copy label name from splitted line pointer */
-   /* TODO: complete this assigning values node 
-   p -> type = type;
-   p -> value = value;
-   */
+   
+   if(!strcmp(pSpLine -> cmd, DIR_DATA)) /* .data */
+      p -> type = L_DATA;
+   else if (!strcmp(pSpLine -> cmd, DIR_STRING)) /* .string */
+      p -> type = L_STRING;
+   else if (!strcmp(pSpLine -> cmd, DIR_ENTRY)) /* entry label */
+      p -> type = L_ENTRY;
+   else if(!strcmp(pSpLine -> cmd, DIR_EXTERN)) /* extern label */
+      p -> type = L_EXTERNAL;
+   else
+      p -> type = L_INST; /* insturction label */
+   
+   /* TODO: complete this assigning values node */
+   /* p -> value = value; */
+   
    
    /* table is empty */
    if(!lblHead)
@@ -40,7 +55,7 @@ void addLabel()
    return;
 }
 
-/* Finds a label in the label table by 'name'. */
+/* Finds a label in the label table by 'name' */
 boolean findLabel(char *name)
 {
 	labelNode *p;
@@ -51,6 +66,7 @@ boolean findLabel(char *name)
 	for(p = lblHead; p; p = p->next)
 		if(!strcmp(p -> name, name))
       {
+         numOfErrors++;
          printError(LABEL_EXIST ,name);
 			return true;
       }
@@ -65,7 +81,7 @@ void updateLabelTable(FILE *fp, int inc)
 
 	for (p = lblHead; p; p = p->next)
 	{
-		if (p -> type == L_CODE)
+		if (p -> type == L_INST)
 			p -> value += inc;
 		else if (p -> type == L_DATA)
 			p-> value += IC + inc;
@@ -77,7 +93,7 @@ labelType getLabelType(labelNode *label)
 {
 	if(label)
 		return label -> type;
-	return UNDEFINED_SYMBOL;
+	return UNDEFINED_LABEL;
 }
 
 /* Returns the given symbol value.  */
@@ -170,7 +186,7 @@ float opMemReq(char *op)
 	return 1; /* IMMIDIET - '#', DIRECT - 'label address' requires 1 */
 }
 
-/* compute how much memory (word) each input line requires, default is 1 as we always need at least 1 */
+/* compute how much memory (word) input instruction line requires, default is 1 as we always need at least 1 */
 float instLineMemReq()
 {
    int wordsCnt = 1; /* words counter */
@@ -189,7 +205,7 @@ float instLineMemReq()
 /* increase global var IC by how much current instruction line memory requirement */
 void increaseIC()
 {
-   IC += ceil(instLineMemReq()); /* we use ceil for cases such 'add r1, #-3',
+   IC += ceil(instLineMemReq()); /* we use ceil() for cases such 'add r1, #-3',
                                  instLineMemReq() will preduce 2.5 words, though
                                  actually requires 3 words */
 }

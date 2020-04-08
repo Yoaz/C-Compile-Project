@@ -100,7 +100,7 @@ boolean splitLine(char *line)
 
     else /* other operations use the normal seperator */
     {
-        if(!parseInst(strtok(NULL, ""))) /* parse for .data and all instructions cmd's */
+        if(!parseInst(strtok(NULL, ""))) /* parse for instructions cmd's */
             return false;
     }
 
@@ -909,7 +909,29 @@ argAddType whichAddArgType(char *arg)
 	if(*arg == ARG_REF && isReg(arg+1)) /* '*r0 - *r7' */
 		return REF_REG;
 
-	/* default -> label */
+	/* else label */
 	return DIRECT;
+}
+
+
+/* 
+* compute which addressing arg type the argument is,
+* is used with VALID argument sent, therefore, for sure one of valid options
+*/
+ARE whichARE(char *arg)
+{
+    if(!arg || whichAddArgType(arg) == NULL_METHOD) /* no argument, safety major */
+		return NULL_ARE;
+    
+    if( (whichAddArgType(arg) == IMMEDIATE) || (whichAddArgType(arg) == DIRECT_REG) || 
+         (whichAddArgType(arg) == REF_REG) )
+            return ABSOLUTE;
+    
+    /* else DIRECT (label), depend on the source of the label */
+    if(!strcmp(pSpLine -> cmd, DIR_ENTRY))
+        return RELOCATABLE;
+    
+    return EXTERNAL;
+    
 }
 

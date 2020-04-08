@@ -42,9 +42,10 @@ enum registers{NULL_REG= -1, RO, R1, R2, R3, R4, R5, R6, R7};
 /* ARE */
 typedef enum
 {
-	ABSOLUTE,
+	NULL_ARE = -1,
 	EXTERNAL,
-	RELOCATABLE
+	RELOCATABLE,
+	ABSOLUTE
 } ARE;
 
 /* Addressing types */
@@ -68,8 +69,8 @@ typedef enum
 
 typedef enum
 {
-	UNDEFINED_SYMBOL = -1,
-	L_CODE,
+	UNDEFINED_LABEL = -1,
+	L_INST,
 	L_DATA,
 	L_STRING,
 	L_ENTRY,

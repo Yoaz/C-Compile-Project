@@ -31,6 +31,8 @@ typedef struct labelNode{
    char *name; /* label name */
    char *type; /* label type */
    int value; /* value of DC */
+   boolean isDir; /* flag if attached to directive command (.data, .string) */
+   boolean isExt; /* flag if reported as external label (.extern) */
    struct labelNode *next; /* pointer to the next label */
 }labelNode;
 
