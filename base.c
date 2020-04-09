@@ -75,30 +75,35 @@ boolean firstRound(FILE *fp)
             continue; /* if error occur during splitLine() then errors in line */
         }
         
-        /* splitLine with no errors -> if label exist */
+        /* splitLine with no errors -> if first-token-from-line-is-label */
         if(pSpLine -> lblFlag)
         {
-            /* .entry/.extern label use is avoided - warning issued for this kind of use */
+            /* .entry/.extern first-token-from-line-is-label than avoid - warning issued for this kind of use */
             if(strcmp(pSpLine -> cmd, DIR_ENTRY) && strcmp(pSpLine -> cmd, DIR_EXTERN)) 
                 addLabel(); /* all the rest of commands, add to label table */
         }
 
+        /* .extern */
+        if(!strcmp(pSpLine -> cmd, DIR_EXTERN))
+        {   
+            addLabel();
+        }
         /* .string directive */
-        if(!strcmp(pSpLine -> cmd, DIR_DATA))
+        else if(!strcmp(pSpLine -> cmd, DIR_DATA))
         {
-
+            increaseDC(); /* will increase data count depend on type of directive command */
         }
         
         /* .data directive */
-        else if(!strcmp(pSpLine -> cmd, DIR_DATA))
+        else if(!strcmp(pSpLine -> cmd, DIR_STRING))
         {
-
+            increaseDC(); /* will increase data count depend on type of directive command */
         }
 
         /* instruction type of command */
         else
         {
-            
+           increaseIC(); /* will increase data count depend on type of directive command */ 
         }
 
         

@@ -25,6 +25,8 @@
 #define NUM_ARGS_ADRS 16 
 #define NUM_INSTRUCTION_COMMANDS 16 
 
+#define STARTING_ADDRS 100 /* program default loaded address */
+
 #define DIR_DATA ".data"
 #define DIR_STRING ".string"
 #define DIR_ENTRY ".entry"

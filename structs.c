@@ -21,24 +21,37 @@ void addLabel()
 
 	p = (labelNode *)safeAlloc(sCalloc, 1, sizeof(struct labelNode)); /* allocate mem for 1 lbl node */
    *p = (labelNode){0}; /* double making sure all struct fields will be reset to 0/null (on top of using calloc()) */
+   
+   /* if addLabel() called when .extern directive, it is to add external label used as command argument, not label: use */
+   if(!strcmp(pSpLine -> cmd, DIR_EXTERN))
+   {
+      p -> name = (char *)safeAlloc(sMalloc, strlen(pSpLine -> argsHead -> name)+1); /* +1 for the null-terminator */
+      p -> name = strcpy(p -> name, pSpLine -> argsHead -> name); /* copy label name from splitted line arguments head pointer */  
+      p -> type = L_EXTERNAL;
+   }
 
-   p -> name = (char *)safeAlloc(sMalloc, strlen(pSpLine -> label)+1); /* +1 for the null-terminator */
-   p -> name = strcpy(p -> name, pSpLine -> label); /* copy label name from splitted line pointer */
+   else /* addLabel() that is first-line-token-label from line input */
+   {
+      p -> name = (char *)safeAlloc(sMalloc, strlen(pSpLine -> label)+1); /* +1 for the null-terminator */
+      p -> name = strcpy(p -> name, pSpLine -> label); /* copy label name from splitted line pointer */
+   }
    
    if(!strcmp(pSpLine -> cmd, DIR_DATA)) /* .data */
+   {
       p -> type = L_DATA;
+      p -> value = DC;
+   }
    else if (!strcmp(pSpLine -> cmd, DIR_STRING)) /* .string */
+   {
       p -> type = L_STRING;
+      p -> value = DC;
+   }   
    else if (!strcmp(pSpLine -> cmd, DIR_ENTRY)) /* entry label */
       p -> type = L_ENTRY;
-   else if(!strcmp(pSpLine -> cmd, DIR_EXTERN)) /* extern label */
-      p -> type = L_EXTERNAL;
-   else
-      p -> type = L_INST; /* insturction label */
-   
-   /* TODO: complete this assigning values node */
-   /* p -> value = value; */
-   
+   else /* insturction label */
+   {
+      p -> type = L_INST; 
+   }
    
    /* table is empty */
    if(!lblHead)
@@ -54,6 +67,7 @@ void addLabel()
 
    return;
 }
+
 
 /* Finds a label in the label table by 'name' */
 boolean findLabel(char *name)
@@ -210,6 +224,20 @@ void increaseIC()
                                  actually requires 3 words */
 }
 
+/* increase global var DC by size of .data/.string argument size */
+void increaseDC()
+{
+   labelNode *p; 
+
+   if(!strcmp(pSpLine -> cmd, DIR_DATA)) /* .data, increase by line argument counter */
+      DC += pSpLine -> numArgs;
+
+   else
+   {
+      p = pSpLine -> argsHead; /* case .string, we know argsHead exist */
+      DC += strlen(p) + 1; /* +1 for null-terminator */ 
+   }
+}
 
 /* will create the first word for instruction commands */
 void firstWord()
