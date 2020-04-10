@@ -24,7 +24,9 @@ void initiate(char *fileName){
     /* Runs the first pass on the source file */
 	if(firstRound(fp)) /* first round was successful */
 	{
-        /* updateLabelTable(fileName); /*TODO: build func to update symbol table after firstRound success */
+        updateLblTable(); /* update label table with starting address (100) and .data/.string with sum IC */
+        printLblTabel(); /* debug */
+
         if(secondRound(fp)) /* second round was success */
         { 
             successFiles++; /* file went through the full parsing to meching code process with no errors, add to success files global counter */
@@ -35,6 +37,7 @@ void initiate(char *fileName){
     }
 
     /* default: second or first round had issues */
+    printLblTabel(); /* debug */
     freeLblTable(); /*TODO: perhaps to merge one func freeAll to free all databases at end each file loop */
     fclose(fp);
     return; /* do not update symbol table nor go for second round on file */
@@ -74,43 +77,58 @@ boolean firstRound(FILE *fp)
             free(line);    
             continue; /* if error occur during splitLine() then errors in line */
         }
-        
-        /* splitLine with no errors -> if first-token-from-line-is-label */
-        if(pSpLine -> lblFlag)
-        {
-            /* .entry/.extern first-token-from-line-is-label than avoid - warning issued for this kind of use */
-            if(strcmp(pSpLine -> cmd, DIR_ENTRY) && strcmp(pSpLine -> cmd, DIR_EXTERN)) 
-                addLabel(); /* all the rest of commands, add to label table */
-        }
+
 
         /* .extern */
         if(!strcmp(pSpLine -> cmd, DIR_EXTERN))
         {   
-            addLabel();
+            /* in this case we add label as operand from .external directive, hence why we know argsHead exist */
+            addLabel(pSpLine -> argsHead -> name, L_EXTERNAL, 0);     
         }
+
+
+        /* .entry */
+        else if(!strcmp(pSpLine -> cmd, DIR_ENTRY))
+        {   
+            
+        }
+
         /* .string directive */
         else if(!strcmp(pSpLine -> cmd, DIR_DATA))
         {
+            if(pSpLine -> lblFlag)
+            {
+                addLabel(pSpLine -> label, L_DATA, DC);
+            }
+
             increaseDC(); /* will increase data count depend on type of directive command */
         }
         
         /* .data directive */
         else if(!strcmp(pSpLine -> cmd, DIR_STRING))
         {
+            if(pSpLine -> lblFlag)
+            {
+                addLabel(pSpLine -> label, L_STRING, DC);
+            }
+
             increaseDC(); /* will increase data count depend on type of directive command */
         }
 
         /* instruction type of command */
         else
         {
-           increaseIC(); /* will increase data count depend on type of directive command */ 
+            if(pSpLine -> lblFlag)
+            {
+                addLabel(pSpLine -> label, L_INST, IC);
+            }
+
+           increaseIC(); /* will increase data count depend on type of instruction command */ 
         }
 
         
         free(line);  /* free alocated memory for line, to free room for next line if exist */
     }
-    
-    printLblTabel(); /* debug */
 
     /* if found errors in current file, first round failed, return false */
     if(numOfErrors)

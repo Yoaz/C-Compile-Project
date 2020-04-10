@@ -68,8 +68,8 @@ typedef union word{
 void labelCheck(char*);
 void checkSyntax(char*);
 int checkExist(char*);
-void updateLabelTable(FILE *, int);
-void addLabel();
+void updateLblTable();
+void addLabel(char *, labelType, int);
 void insertLabel(char*);
 void printLblTabel();
 labelType getLabelType(labelNode *);

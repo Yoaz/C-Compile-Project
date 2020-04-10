@@ -15,43 +15,17 @@
 * This func is being called after full line parse has commited, therefore, line is 100% legit 
 * and SplittedLine global var has all the paramaters assigned to its struct members 
 */
-void addLabel()
+void addLabel(char *name, labelType type, int value)
 {
 	labelNode *p; 
 
 	p = (labelNode *)safeAlloc(sCalloc, 1, sizeof(struct labelNode)); /* allocate mem for 1 lbl node */
    *p = (labelNode){0}; /* double making sure all struct fields will be reset to 0/null (on top of using calloc()) */
-   
-   /* if addLabel() called when .extern directive, it is to add external label used as command argument, not label: use */
-   if(!strcmp(pSpLine -> cmd, DIR_EXTERN))
-   {
-      p -> name = (char *)safeAlloc(sMalloc, strlen(pSpLine -> argsHead -> name)+1); /* +1 for the null-terminator */
-      p -> name = strcpy(p -> name, pSpLine -> argsHead -> name); /* copy label name from splitted line arguments head pointer */  
-      p -> type = L_EXTERNAL;
-   }
 
-   else /* addLabel() that is first-line-token-label from line input */
-   {
-      p -> name = (char *)safeAlloc(sMalloc, strlen(pSpLine -> label)+1); /* +1 for the null-terminator */
-      p -> name = strcpy(p -> name, pSpLine -> label); /* copy label name from splitted line pointer */
-   }
-   
-   if(!strcmp(pSpLine -> cmd, DIR_DATA)) /* .data */
-   {
-      p -> type = L_DATA;
-      p -> value = DC;
-   }
-   else if (!strcmp(pSpLine -> cmd, DIR_STRING)) /* .string */
-   {
-      p -> type = L_STRING;
-      p -> value = DC;
-   }   
-   else if (!strcmp(pSpLine -> cmd, DIR_ENTRY)) /* entry label */
-      p -> type = L_ENTRY;
-   else /* insturction label */
-   {
-      p -> type = L_INST; 
-   }
+   p -> name = (char *)safeAlloc(sMalloc, strlen(name)+1); /* +1 for the null-terminator */
+   p -> name = strcpy(p -> name, name); /* copy label */  
+   p -> type = type;
+   p -> value = value;
    
    /* table is empty */
    if(!lblHead)
@@ -88,19 +62,22 @@ boolean findLabel(char *name)
 	return false;
 }
 
-/* Updates the symbol table addresses. */
-void updateLabelTable(FILE *fp, int inc)
+/* Updates the label table */
+void updateLblTable()
 {
 	labelNode *p;
 
 	for (p = lblHead; p; p = p->next)
 	{
-		if (p -> type == L_INST)
-			p -> value += inc;
-		else if (p -> type == L_DATA)
-			p-> value += IC + inc;
+		if (p -> type == L_DATA || p -> type == L_STRING)
+			p-> value += (IC +  STARTING_ADDRS); /* increase each .data/.string label value with sum file IC + 
+                                            STARTING_ADDRS (100) */
+      else if(p -> type == L_INST)
+         p -> value +=  STARTING_ADDRS; /* increase each instruction label with STARTING_ADDRS (100) 
+                                        that is assumed as the starting mem program loaded address */
 	}
 }
+
 
 /* Returns the given symbol type. */
 labelType getLabelType(labelNode *label)
@@ -109,6 +86,7 @@ labelType getLabelType(labelNode *label)
 		return label -> type;
 	return UNDEFINED_LABEL;
 }
+
 
 /* Returns the given symbol value.  */
 long getSymbolVal(labelNode *label)
@@ -195,22 +173,28 @@ void printArgTabel()
 float opMemReq(char *op)
 {
 	if(whichAddArgType(op) == DIRECT_REG || whichAddArgType(op) == REF_REG) /* DIRECT_REG - 'r0-7', REF_REG '*r0-7' type */
-      return 0.5;
+   {
+      printf("this arg requires 0.5\n"); /* debug */
+      return 0.5; /* debug */
+   }
 
-	return 1; /* IMMIDIET - '#', DIRECT - 'label address' requires 1 */
+   printf("this arg requires 1.0\n");
+	return 1.0; /* IMMIDIET - '#', DIRECT - 'label address' requires 1 */
 }
 
 /* compute how much memory (word) input instruction line requires, default is 1 as we always need at least 1 */
 float instLineMemReq()
 {
-   int wordsCnt = 1; /* words counter */
+   float wordsCnt = 1.0; /* words counter */
    argNode *p; /* run on line arguments */
 
-   if(!pSpLine || !pSpLine -> argsHead) /* safety major */
+   if(!pSpLine) /* safety major */
       return 0; 
 
    for(p = pSpLine -> argsHead; p; p = p -> next) /* Run on the args, max run is 2 as max args for instruction is 2 */
 			wordsCnt += opMemReq(p -> name); /* sum the words required based on arguments from line */
+
+   printf("This Instruction requires: %f memory slots\n", wordsCnt); /* debug */
 
    return wordsCnt;
 }
@@ -223,6 +207,7 @@ void increaseIC()
                                  instLineMemReq() will preduce 2.5 words, though
                                  actually requires 3 words */
 }
+
 
 /* increase global var DC by size of .data/.string argument size */
 void increaseDC()
@@ -238,6 +223,7 @@ void increaseDC()
       DC += strlen(p) + 1; /* +1 for null-terminator */ 
    }
 }
+
 
 /* will create the first word for instruction commands */
 void firstWord()

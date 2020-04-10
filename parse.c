@@ -525,7 +525,7 @@ boolean parseInst(char *restOfLine)
     /* now we'll check matching provided args count vs current command args count requirement */
     if(pSpLine -> numArgs == 0) /* quick check for unique case of 0 args from line (fetchArgs() assign this property) */
     {
-        /* check with commands: 'stop', 'jsr' - that requires no arguments at all */
+        /* check with commands: 'stop', 'rts' - that requires no arguments at all */
         if((!strcmp(pSpLine -> cmd, "stop") || !strcmp(pSpLine ->  cmd, "rts")))
                 return true;
 
@@ -900,13 +900,13 @@ argAddType whichAddArgType(char *arg)
     if(!arg) /* no argument, safety major */
 		return NULL_METHOD;
     
-    if(*arg == ARG_IMMIDIET) /* '#+number' */
+    else if(*arg == ARG_IMMIDIET) /* '#+number' */
         return IMMEDIATE;
 
-	if(isReg(arg)) /* 'r0-r7' */
+	else if(isReg(arg)) /* 'r0-r7' */
 		return DIRECT_REG;
 
-	if(*arg == ARG_REF && isReg(arg+1)) /* '*r0 - *r7' */
+	else if(*arg == ARG_REF && isReg(arg+1)) /* '*r0 - *r7' */
 		return REF_REG;
 
 	/* else label */
