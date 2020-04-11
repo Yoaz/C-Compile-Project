@@ -96,6 +96,7 @@ long getSymbolVal(labelNode *label)
 	return 0;
 }
 
+
 /* will free current global label list */ 
 void freeLblTable()
 {
@@ -219,8 +220,8 @@ void increaseDC()
 
    else
    {
-      p = pSpLine -> argsHead; /* case .string, we know argsHead exist */
-      DC += strlen(p) + 1; /* +1 for null-terminator */ 
+      p = pSpLine -> argsHead -> name; /* case .string, we know argsHead exist */
+      DC += (strlen(p) - 2) + 1; /* -2 to exclude quatation marks (""), +1 for null-terminator */
    }
 }
 

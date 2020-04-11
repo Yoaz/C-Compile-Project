@@ -90,7 +90,9 @@ boolean firstRound(FILE *fp)
         /* .entry */
         else if(!strcmp(pSpLine -> cmd, DIR_ENTRY))
         {   
-            
+            resetSpLine(pSpLine);
+            free(line);
+            continue;
         }
 
         /* .string directive */
@@ -143,8 +145,14 @@ return true;
 boolean secondRound(FILE *fp)
 {
 
-   IC = 0;
-   rewind(fp); /* Setting FILE* pointer back to begining of file */
+    IC = 0;
+    rewind(fp); /* Setting FILE* pointer back to begining of file */
+
+    if(!strcmp(pSpLine -> cmd, DIR_ENTRY))
+    {
+        /* if(findLabel(pSpLine -> label) && ) */
+    }     
+
    
    return false;
 }
