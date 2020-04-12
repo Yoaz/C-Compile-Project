@@ -29,10 +29,8 @@ extern spLine *pSpLine;
 
 typedef struct labelNode{
    char *name; /* label name */
-   char *type; /* label type */
+   labelType type; /* label type */
    int value; /* value of DC */
-   boolean isDir; /* flag if attached to directive command (.data, .string) */
-   boolean isExt; /* flag if reported as external label (.extern) */
    struct labelNode *next; /* pointer to the next label */
 }labelNode;
 
@@ -75,7 +73,7 @@ void printLblTabel();
 labelType getLabelType(labelNode *);
 long getSymbolVal(labelNode *);
 void freeLblTable();
-boolean findLabel(char *);
+labelNode *findLabel(char *);
 void printArgTabel();
 
 #endif

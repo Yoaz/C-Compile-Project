@@ -33,7 +33,9 @@ LIST:	.data 6,-9, -16385
 		.data -100
 K:		.data 31				   
 
-K:
+K: 
+
+K: add r1, r4
 .string 		ddds 		djh
 .extern L3   	
 T: .entry RT

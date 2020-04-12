@@ -251,7 +251,7 @@ boolean fetchLabel(char *token)
     lbl = (char *)safeAlloc(sCalloc, strlen(token) -1, sizeof(char)); /* minus the ':' in the token label */
     strncpy(lbl, token, strlen(token)-1); /* copy to local lbl */
 
-    if(!findLabel(lbl) && isLegitLabel(lbl)) /* if label has legit syntax */ 
+    if(isLegitLabel(lbl)) /* if label has legit syntax */ 
     { 
         pSpLine -> lblFlag = true;
         /* copy the label name to the global splitted line label field */

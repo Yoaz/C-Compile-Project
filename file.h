@@ -3,13 +3,11 @@
 #include "globals.h"
 #include "errors.h"
 
-
-
 /* The file extentions */
-#define SOURCE_EXT ".as"
-#define OBJ_EXT ".ob"
-#define ENT_EXT ".ent"
-#define EXT_EXT ".ext"
+#define SOURCE_ET ".as"
+#define OBJ_ET ".ob"
+#define ENT_ET ".ent"
+#define EXT_ET ".ext"
 
 
 /* The file open mode */
@@ -21,9 +19,15 @@
 #define UPDATE_READ "a+"
 
 
+extern char *fname;
+
 /*                                                                                                           *\
 ********************************************* FUNCTION PROTOTYPE **********************************************
 \*  
 
 /* will fetch line from current FILE * and will parse according to the line content in case of no errors */
-void fetchLine(FILE *, char**);
+void fetchLine(FILE *, char **);
+
+void writeEntry(char *, char *, int *);
+
+FILE *fetchFile(char *, char *);

@@ -9,7 +9,7 @@
             "request": "launch",
             "name": "Debug",
             "program": "${workspaceFolder}/assembler",
-            "args": ["ps2"],
+            "args": ["ps2", "ps3"],
             "cwd": "${workspaceFolder}",
             "stopOnEntry": true,
             "sourceLanguages": ["rust"]

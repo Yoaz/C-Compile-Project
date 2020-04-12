@@ -157,6 +157,12 @@ void printError(errorList errorTitle, ...)
         case MISSING_LBL:
             fprintf(stderr,"ERROR[%d,%d]: Missing label\n",numRow,numColumn);
             break; 
+        case MISSING_LBL_DEF:
+            fprintf(stderr,"ERROR[%d,%d]: Label: \"%s\" defined as .entry, but, missing in file definition\n",numRow,numColumn, va_arg(ap, char *));
+            break;
+        case EXTERNAL_LABEL:
+            fprintf(stderr,"ERROR[%d,%d]: \"%s\" Label already declared as external type of label\n",numRow,numColumn,va_arg(ap, char *));
+            break;
 
         /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ INSTRUCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
         /* general */

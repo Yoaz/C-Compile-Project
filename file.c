@@ -9,11 +9,22 @@ FILE *fetchFile(char *fileName, char *fileMode)
 {
     FILE *fp;
     
-    if(!(fp = fopen(fileName, fileMode) )) /* Check success of file open */
-        return NULL; /* no success in opening the file, return NULL to FILE * pointer */
+    fname = (char *)safeAlloc(sCalloc, 1, strlen(fileName) + strlen(SOURCE_ET) + 1);
+    strcpy(fname, fileName);
+    strcat(fname, SOURCE_ET);
+
+    fp = fopen(fname, fileMode);
+
+    if(!fp)
+    {
+        printError(FAILED_OPEN, fname); /* Will print FAILED_OPEN err */ 
+        fclose(fp);
+        return NULL; /* name of file not found, move on to next file from argv[] if exist */
+    }
 
     return fp;
 }
+
 
 /* the function read char by char from file and assign to line when \n occur
 * this funcion will 'on the fly' avoid extra white chars from input, and replace with since space char, as long
@@ -74,4 +85,24 @@ void fetchLine(FILE *fd, char **line)
             (*line) = (char *)safeAlloc(sRealloc,(*line),sizeof(char)*(size+=1));
         }
    }
+}
+
+
+/* write entry file */
+void writeEntry(char *fileName, char *lbl, int *value)
+{
+    FILE *fp;
+    char *fname;
+
+    fp = fopen(fileName, "a");
+
+    if(!fp)
+    {
+        printf("Fatal error opening/creating entry file %s", fileName);
+        exit(1);
+    }
+
+    fprintf(fp, "%s\t%d\n", lbl, value);
+
+    fclose(fp);
 }

@@ -12,4 +12,4 @@ t: .data     1, 4
 
 .extern          L3
 
-.entry ROT
+.entry t

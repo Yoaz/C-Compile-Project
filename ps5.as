@@ -5,3 +5,9 @@ add #-8,   *r4
 stop
 
 END:	stop
+
+.entry YOYO
+
+        ABCD: add r1, *r2
+
+.extern             YOYO

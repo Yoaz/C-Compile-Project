@@ -44,23 +44,23 @@ void addLabel(char *name, labelType type, int value)
 
 
 /* Finds a label in the label table by 'name' */
-boolean findLabel(char *name)
+labelNode *findLabel(char *name)
 {
 	labelNode *p;
 
    if(!lblHead)
-      return false;
+      return NULL;
+
 
 	for(p = lblHead; p; p = p->next)
 		if(!strcmp(p -> name, name))
       {
-         numOfErrors++;
-         printError(LABEL_EXIST ,name);
-			return true;
+			return p;
       }
 
-	return false;
+	return NULL;
 }
+
 
 /* Updates the label table */
 void updateLblTable()
@@ -119,6 +119,7 @@ void freeLblTable()
       p = p -> next;
    }
    
+   lblHead = NULL;
    lblLast = NULL;
 
     return;
