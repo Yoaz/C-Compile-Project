@@ -22,4 +22,5 @@ extern DC;
 void resetGlobals();
 void initiate(char *);
 boolean firstRound(FILE *);
-boolean secondRound(FILE *);
+boolean secondRound(fileObject *);
+boolean validateLabelAsArg();

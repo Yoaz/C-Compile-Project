@@ -4,27 +4,58 @@
 #include "file.h"
 
 
+
 /* function will fetch the file with the fileName provided and open with mode based on file mode provided */
-FILE *fetchFile(char *fileName, char *fileMode)
+fileObject *fetchFile(char *fileName, char *fileMode)
 {
-    FILE *fp;
+    fileObject *fileOb;
+    char *tmp;
+
+    fileOb = (fileObject *)safeAlloc(sCalloc, 1, sizeof(fileObject));
+
+    /* save raw file name to file object structure to use later in different file creating/handling */
+    fileOb -> rawName = (char *)safeAlloc(sCalloc, strlen(fileName) + 1, sizeof(char));
+    strcpy(fileOb -> rawName, fileName);
     
-    fname = (char *)safeAlloc(sCalloc, 1, strlen(fileName) + strlen(SOURCE_ET) + 1);
-    strcpy(fname, fileName);
-    strcat(fname, SOURCE_ET);
+    /* tmp file name of source, in order to open with extension */
+    tmp = (char *)safeAlloc(sCalloc, (strlen(fileName) + strlen(EXT_ET) + 1) , sizeof(char));
+    strcpy(tmp, fileName);
+    strcat(tmp, SRC_ET);
 
-    fp = fopen(fname, fileMode);
+    /* assign file handler to file structure src handler */
+    fileOb -> src = fopen(tmp, fileMode);
 
-    if(!fp)
+    /* issues with opening the related file */
+    if(!fileOb -> src)
     {
-        printError(FAILED_OPEN, fname); /* Will print FAILED_OPEN err */ 
-        fclose(fp);
+        printError(FAILED_OPEN, tmp); /* Will print FAILED_OPEN err */ 
+        fclose(fileOb -> src);
+        free(tmp); /* no need for this other than one time use */
         return NULL; /* name of file not found, move on to next file from argv[] if exist */
     }
 
-    return fp;
+    free(tmp);
+    return fileOb;
 }
 
+/* close file and free file object stracture */
+void closeFile(fileObject *fileOb)
+{
+    if(!fileOb)
+        return;
+
+    free(fileOb -> rawName);
+
+    if(fileOb -> src)
+        fclose(fileOb -> ent);
+    if(fileOb -> ent)
+        fclose(fileOb -> ent);
+    if(fileOb -> ext)
+        fclose(fileOb -> ent);
+
+    free(fileOb);    
+
+}
 
 /* the function read char by char from file and assign to line when \n occur
 * this funcion will 'on the fly' avoid extra white chars from input, and replace with since space char, as long
@@ -89,20 +120,38 @@ void fetchLine(FILE *fd, char **line)
 
 
 /* write entry file */
-void writeEntry(char *fileName, char *lbl, int *value)
+void writeEntry(fileObject *fileOb, char *lbl, int *value)
 {
-    FILE *fp;
     char *fname;
 
-    fp = fopen(fileName, "a");
-
-    if(!fp)
+    if(!fileOb -> ent) /* ent file handler isn't open already */
     {
-        printf("Fatal error opening/creating entry file %s", fileName);
-        exit(1);
+        fname = (char *) safeAlloc(sCalloc, (strlen(fileOb -> rawName) + strlen(ENT_ET) + 1), sizeof(char));
+        strcpy(fname, fileOb -> rawName);
+        strcat(fname, ENT_ET);
+        fileOb -> ent = fopen(fname, WRITE_ONLY); /* if already exist, rewrite as this is first file open for this program loop */
+        free(fname);
     }
 
-    fprintf(fp, "%s\t%d\n", lbl, value);
+    fprintf(fileOb -> ent, "%s\t%d\n", lbl, value);
 
-    fclose(fp);
+}
+
+
+/* write extern file */
+void writeExtern(fileObject *fileOb, char *lbl, int *value)
+{
+    char *fname;
+
+    if(!fileOb -> ext) /* ent file handler isn't open already */
+    {
+        fname = (char *) safeAlloc(sCalloc, (strlen(fileOb -> rawName) + strlen(EXT_ET) + 1), sizeof(char));
+        strcpy(fname, fileOb -> rawName);
+        strcat(fname, EXT_ET);
+        fopen(fname, WRITE_ONLY); /* if already exist, rewrite as this is first file open for this program loop */
+    }
+
+    fprintf(fileOb -> ent, "%s\t%d\n", lbl, value);
+
+    free(fname);
 }

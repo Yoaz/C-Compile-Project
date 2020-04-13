@@ -563,13 +563,13 @@ boolean fetchArgs(char *restOfLine)
 
  	enum
 	{
-		waitForArg,		   /* Waiting for arg. */
-		readArg,		   /* Right now reads an arg  */
-		waitForSep		   /* Wait for the 'specific' separator */
-	} status = waitForArg; /* An status that will help with the parse */
+		waitForArg,	/* Waiting for an argument */
+		readArg,    /* Right now reads an argument  */
+		waitForSep  /* Wait for the an argument separator */
+	} currStatus = waitForArg; /* fetching status in order to follow current anticipating status */
 
 	int i,		/* loop helper */
-		startI; /* The beginning of the current arg */
+	startI;     /* The beginning of the current arg */
 
     if(!restOfLine) /* no args data */
     {
@@ -577,9 +577,9 @@ boolean fetchArgs(char *restOfLine)
         return true;
     }
 
-	for (i = 0; restOfLine[i]; i++) /* Run on the line, char by char */
+	for (i = 0; restOfLine[i]; i++) /* Run on the rest of line by each char */
 	{
-		if (status == waitForArg) /* Waiting for the start of an arg. */
+		if (currStatus == waitForArg) /* Waiting for the start of an arg. */
 		{
 			if (isspace(restOfLine[i])) /* Before arg can be white-spaces */
 				continue;
@@ -593,18 +593,19 @@ boolean fetchArgs(char *restOfLine)
 			else /* The start of the arg */
 			{
 				startI = i;
-				status = readArg;
+				currStatus = readArg;
 			}
 		}
-		else if (status == readArg) /* Read an arg. */
+		else if (currStatus == readArg) /* current reading an argument */
 		{
 			if (isspace(restOfLine[i]) || restOfLine[i] == COMMA) /* Space / Separator marks the end of the arg */
 			{
-				/* copy the arg to an allocated "string" */
+				/* save argument to sptlitine global var */
 				argLen = i - startI;
                 temp = (char *)	safeAlloc(sCalloc,(argLen + 1), sizeof(char));																  /* i is the place in the line where the arg ends. */
-				temp = strncpy(temp, restOfLine + startI, argLen); /* +1 for the null-terminator */
-				temp[argLen] = '\0';  /* Adds the null terminator to the end of the line. */
+				temp = strncpy(temp, restOfLine + startI, argLen); /* +1 for the end of string null */
+				temp[argLen] = '\0'; 
+
                 if(!addArgToArgList(temp))
                 {
                     free(temp);
@@ -616,20 +617,20 @@ boolean fetchArgs(char *restOfLine)
 				++argc;
                 free(temp);
 
-				status = waitForSep;
-				if (restOfLine[i] == COMMA) /* There is separator, now need another arg. */
-					status = waitForArg;
+				currStatus = waitForSep;
+				if (restOfLine[i] == COMMA) /* There is separator, another argument is required */
+					currStatus = waitForArg;
 			}
 			else /* Still reads the line */
 				continue;
 		}
-		else if (status == waitForSep) /* Waiting for separator */
+		else if (currStatus == waitForSep) /* Waiting for separator */
 		{
 			if (isspace(restOfLine[i])) /* Before separator can be white-spaces */
 				continue;
-			if (restOfLine[i] == COMMA) /* Find the separator, now need another arg */
-				status = waitForArg;
-			else /* There is an arg before separator! */
+			if (restOfLine[i] == COMMA) 
+				currStatus = waitForArg;
+			else /* There is an argument before another separator */
 			{
 				printError(MISSING_ARG_SEP);
                 numOfErrors++;
@@ -638,24 +639,24 @@ boolean fetchArgs(char *restOfLine)
 		}
 	}
 
-	if(status == waitForArg) /* There is a separator at the end of the line */
+	if(currStatus == waitForArg) /* There is a separator at the end of the line */
 	{
 		printError(ILLEGAL_ARG_SEP);
         numOfErrors++;
 		return false;
 	}
 
-	else if(status == readArg) /* There is arg at the end of the line */
+	else if(currStatus == readArg) /* There is arg at the end of the line */
     {
-        /* copy the arg to an allocated "string" */
+        /* save argument to sptlitine global var */
         argLen = i - startI;
-        temp = (char *)	safeAlloc(sCalloc, (argLen + 1), sizeof(char));	/* i is the place in the line where the arg ends. */
-        temp = strncpy(temp, restOfLine + startI, argLen); /* +1 for the null-terminator */
-        temp[argLen] = '\0';	/* Adds the null terminator to the end of the line. */
+        temp = (char *)	safeAlloc(sCalloc, (argLen + 1), sizeof(char));	/* i is the place in the line where the arguments ends */
+        temp = strncpy(temp, restOfLine + startI, argLen); 
+        temp[argLen] = '\0';	
         if(!addArgToArgList(temp))
         {
             free(temp);
-            puts("ISSUE ADDING ARG TO LIST");
+            puts("ISSUE ADDING ARG TO LIST"); /* safety major */
             exit(1);
         }
 
@@ -934,4 +935,6 @@ ARE whichARE(char *arg)
     return EXTERNAL;
     
 }
+
+
 

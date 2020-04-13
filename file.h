@@ -4,7 +4,7 @@
 #include "errors.h"
 
 /* The file extentions */
-#define SOURCE_ET ".as"
+#define SRC_ET ".as"
 #define OBJ_ET ".ob"
 #define ENT_ET ".ent"
 #define EXT_ET ".ext"
@@ -18,8 +18,12 @@
 #define UPDATE_ONLY "a"
 #define UPDATE_READ "a+"
 
+typedef struct
+{
+    char *rawName;
+    FILE *src, *ent, *ext;
+}fileObject;
 
-extern char *fname;
 
 /*                                                                                                           *\
 ********************************************* FUNCTION PROTOTYPE **********************************************
@@ -28,6 +32,10 @@ extern char *fname;
 /* will fetch line from current FILE * and will parse according to the line content in case of no errors */
 void fetchLine(FILE *, char **);
 
-void writeEntry(char *, char *, int *);
+void writeEntry(fileObject *, char *, int *);
 
-FILE *fetchFile(char *, char *);
+void writeExtern(fileObject *, char *, int *);
+
+fileObject *fetchFile(char *, char *);
+
+void closeFile(fileObject *);

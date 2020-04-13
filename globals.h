@@ -18,8 +18,6 @@
 #define ARG_IMMIDIET '#'
 #define ARG_REG 'r'
 
-#define MAX_FILE_NAME 30
-#define MAX_LINE_SIZE 81
 #define MAX_LABEL_SIZE 31
 #define TYPE_SIZE 8
 #define NUM_ARGS_ADRS 16 

@@ -8,26 +8,27 @@
 /* accpets *argv[] (file names) from cmd input and initiate assmebler */
 void initiate(char *fileName)
 {
-    FILE *fp;
+    fileObject *fileOb;
     
     /* fetching files */
-    if(!(fp=fetchFile(fileName, READ_ONLY)))
+    if(!(fileOb=fetchFile(fileName, READ_ONLY)))
         return;
 
     /* Debug */
-    printf("Open file: \"%s\"\n", fname); 
+    printf("Open file: \"%s.as\"\n", fileOb -> rawName); 
 
     /* Runs the first pass on the source file */
-	if(firstRound(fp)) /* first round was successful */
+	if(firstRound(fileOb -> src)) /* first round was successful */
 	{
         updateLblTable(); /* update label table with starting address (100) and .data/.string with sum IC */
         printLblTabel(); /* debug */
 
-        if(secondRound(fp)) /* second round was success */
+        if(secondRound(fileOb)) /* second round was success */
         { 
             successFiles++; /* file went through the full parsing to meching code process with no errors, add to success files global counter */
             resetSpLine(pSpLine); /* free global splitted line var */
-            fclose(fp);
+            printLblTabel(); /* debug */
+            closeFile(fileOb);
             return; /* next file if exist */
         }
     }
@@ -35,16 +36,16 @@ void initiate(char *fileName)
     /* default: second or first round had issues */
     printLblTabel(); /* debug */
      /*TODO: perhaps to merge one func freeAll to free all databases at end each file loop */
-    fclose(fp);
+    closeFile(fileOb);
     return; /* do not update symbol table nor go for second round on file */
 }
 
 
 
-/* first round through file content to examine the content */
+/* first round through file content to examine the content, built symbol table */
 boolean firstRound(FILE *fp)
 {
-    char *line, *tmpLine;
+    char *line;
     IC=0, DC=0, numOfErrors = 0, numColumn = 0; /* reset global vars */
     
     /* As long as not end of file keep fetch lines from file */
@@ -86,7 +87,7 @@ boolean firstRound(FILE *fp)
         /* .extern */
         if(!strcmp(pSpLine -> cmd, DIR_EXTERN))
         {   
-            /* in this case we add label as operand from .external directive, hence why we know argsHead exist */
+            /* in this case we add label as operand from .extern directive, reason why we know argsHead exist */
             addLabel(pSpLine -> argsHead -> name, L_EXTERNAL, 0);     
         }
 
@@ -99,7 +100,7 @@ boolean firstRound(FILE *fp)
             continue;
         }
 
-        /* .string directive */
+        /* .string */
         else if(!strcmp(pSpLine -> cmd, DIR_DATA))
         {
             if(pSpLine -> lblFlag)
@@ -110,7 +111,7 @@ boolean firstRound(FILE *fp)
             increaseDC(); /* will increase data count depend on type of directive command */
         }
         
-        /* .data directive */
+        /* .data */
         else if(!strcmp(pSpLine -> cmd, DIR_STRING))
         {
             if(pSpLine -> lblFlag)
@@ -121,7 +122,7 @@ boolean firstRound(FILE *fp)
             increaseDC(); /* will increase data count depend on type of directive command */
         }
 
-        /* instruction type of command */
+        /* instruction */
         else
         {
             if(pSpLine -> lblFlag)
@@ -133,7 +134,7 @@ boolean firstRound(FILE *fp)
         }
 
         resetSpLine(pSpLine); /* free global splitted line var */
-        free(line);  /* free alocated memory for line, to free room for next line if exist */
+        free(line);  /* free allocated memory for line, to free room for next line if exist */
     }
 
     /* if found errors in current file, first round failed, return false */
@@ -146,22 +147,21 @@ return true;
 
 
 /* second round looping throug the file content to complete necesery parsing */
-boolean secondRound(FILE *fp)
+boolean secondRound(fileObject *fileOb)
 {
-
     IC = 0;
-    rewind(fp); /* Setting FILE* pointer back to begining of file */
+    rewind(fileOb -> src); /* Setting FILE* pointer back to begining of file */
     labelNode *p;
-    char *line, *tmpLine;
+    char *line;
 
     /* As long as not end of file keep fetch lines from file */
     while(1)
     {
-        if(feof(fp))
+        if(feof(fileOb -> src))
             break; /* since file eof activated after trying to act on file once arrived end of file */
 
         /* fetch line from file and save to local line var */
-        fetchLine(fp, &line);
+        fetchLine(fileOb -> src, &line);
 
         numRow++; /* global counter for current row num in current file */
         
@@ -183,10 +183,11 @@ boolean secondRound(FILE *fp)
         /* .entry */
         if(!strcmp(pSpLine -> cmd, DIR_ENTRY))
         {
-            /* if label exist in label tabel */
+            
+            /* look for the label in label table */
             p = findLabel(pSpLine -> argsHead -> name);
 
-            if(!p) /* label not exist in label tabel, but, defined in .entry directive */
+            if(!p) /* label doesnt exist in label tabel, but, defined in .entry directive */
             {
                 numOfErrors++;
                 printError(MISSING_LBL_DEF, pSpLine -> argsHead -> name);
@@ -202,22 +203,74 @@ boolean secondRound(FILE *fp)
                 
                 else /* label exist and not .external defined */
                 {
-                    writeEntry("ps7", p -> name, p -> value); /* write to entry file */
+                    /* TODO: complete file struct to hold all file * type and basic fchar *filaname */
+                    writeEntry(fileOb, p -> name, p -> value); /* write to entry file */
                 }
             
             }
 
         }
 
-        /* .extern */
-        else if(!strcmp(pSpLine -> cmd, DIR_EXTERN))
+        /* .extern, .data, .string */
+        else if(!strcmp(pSpLine -> cmd, DIR_EXTERN) || !strcmp(pSpLine -> cmd, DIR_DATA) || !strcmp(pSpLine -> cmd, DIR_STRING))
         {
+            /* already taken care in first file pass */
+            resetSpLine(pSpLine);
+            free(line);
+            continue;
+
+        }
+
+        /* instruction */
+        else
+        {
+            if(!validateLabelAsArg()) /* if label as arg is undefined, cant translate arg address */
+            {    
+                increaseIC();
+                continue;
+            }
+            increaseIC(); /* will increase data count depend on type of instruction command */ 
 
         }
     }
 
-   
-   return false;
+    /* if found errors in current file, second round failed, return false */
+    if(numOfErrors)
+        return false;
+
+/* second round success */
+return true;    
+}
+
+
+/* validates rather a label declared as an argument in instruction command, exist in label table */
+boolean validateLabelAsArg()
+{
+    labelNode *p;
+    argNode *tmp;
+    int i;
+
+    if(pSpLine -> argsHead) /* check if current line has arguments */
+    {
+        tmp = pSpLine -> argsHead;
+        i = 1;
+
+        while(tmp)
+        {
+            if(whichAddArgType(tmp -> name) == DIRECT)
+            {
+                /* look for the label in label table */
+                p = findLabel(tmp -> name);
+                if(!p) /* label doesnt exist in label tabel, but, declered in instruction command */
+                {
+                    numOfErrors++;
+                    printError(MISSING_LBL_AS_ARG, tmp -> name);
+                }
+            }
+            i++;
+            tmp = tmp -> next;
+        }
+    }        
 }
 
 
@@ -225,8 +278,6 @@ boolean secondRound(FILE *fp)
 void resetGlobals()
 {
     freeLblTable();
-    if(fname)
-        free(fname);
     IC = 0;
     DC = 0;
     numColumn = 0;

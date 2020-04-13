@@ -82,7 +82,7 @@ void printError(errorList errorTitle, ...)
             fprintf(stderr,"Failed to open \"%s\"\n",va_arg(ap, char *));
             break;
         case ERRORS_IN_FILE:
-            fprintf(stderr, "Found %d errors in current file: %s\n", va_arg(ap, int), va_arg(ap, char*));
+            fprintf(stderr, "Found %d errors in current file: %s.as\n", va_arg(ap, int), va_arg(ap, char*));
             break;
         case WRONG_FILES:
             fprintf(stderr, "None of the files provided seccuessfully translated\\found\n");
@@ -186,6 +186,9 @@ void printError(errorList errorTitle, ...)
             break;
         case NUM_RANGE:
             fprintf(stderr,"ERROR[%d,%d]: \"%s\" is off range for this command\n",numRow,numColumn, va_arg(ap, char *));
+            break; 
+        case MISSING_LBL_AS_ARG:
+            fprintf(stderr,"ERROR[%d,%d]: \"%s\" label is passed as instruction argument, but, not defined (as .entry or as .extern)\n",numRow,numColumn, va_arg(ap, char *));
             break;
 
         /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ GENERAL ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
