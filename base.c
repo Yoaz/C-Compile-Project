@@ -26,7 +26,6 @@ void initiate(char *fileName)
         if(secondRound(fileOb)) /* second round was success */
         { 
             successFiles++; /* file went through the full parsing to meching code process with no errors, add to success files global counter */
-            resetSpLine(pSpLine); /* free global splitted line var */
             printLblTabel(); /* debug */
             closeFile(fileOb);
             return; /* next file if exist */
@@ -151,8 +150,10 @@ boolean secondRound(fileObject *fileOb)
 {
     IC = 0;
     rewind(fileOb -> src); /* Setting FILE* pointer back to begining of file */
-    labelNode *p;
+    labelNode *p; 
+    argNode *a; /* run on args tmp */
     char *line;
+    int i = 1;
 
     /* As long as not end of file keep fetch lines from file */
     while(1)
@@ -224,13 +225,38 @@ boolean secondRound(fileObject *fileOb)
         /* instruction */
         else
         {
-            if(!validateLabelAsArg()) /* if label as arg is undefined, cant translate arg address */
-            {    
-                increaseIC();
-                continue;
-            }
-            increaseIC(); /* will increase data count depend on type of instruction command */ 
+            if(pSpLine -> argsHead) /* instruction command with arguments */
+            {
+                a = pSpLine -> argsHead; /* to run on arguments */
 
+                while(a) /* run on args */
+                {
+                    i++; /* using i counter for arg count, start from i = 1 since each instruction requires at least 1 word */
+
+                    if(whichAddArgType(a -> name) == DIRECT) /* label as argument */
+                    {
+                        p = findLabel(a -> name); /* look for the arg label in label table */
+
+                        if(p) /* label exist in label table */
+                        {
+                            if(p -> type == L_EXTERNAL) /* label as arg, exist in label table and type external */
+                            {
+                                writeExtern(fileOb, p -> name, IC + STARTING_ADDRS + i); /* write to external file */
+                            }
+                        }   
+                        else if(!p) /* label as argument, but, not declared as .extern or .entry, error */
+                        {
+                            numOfErrors++;
+                            printError(MISSING_LBL_AS_ARG, a -> name);
+                        } 
+                                      
+                    }
+                    a = a -> next;
+                }
+            }
+
+            increaseIC(); /* will increase data count depend on type of instruction command */ 
+            i = 0;
         }
     }
 
@@ -242,36 +268,6 @@ boolean secondRound(fileObject *fileOb)
 return true;    
 }
 
-
-/* validates rather a label declared as an argument in instruction command, exist in label table */
-boolean validateLabelAsArg()
-{
-    labelNode *p;
-    argNode *tmp;
-    int i;
-
-    if(pSpLine -> argsHead) /* check if current line has arguments */
-    {
-        tmp = pSpLine -> argsHead;
-        i = 1;
-
-        while(tmp)
-        {
-            if(whichAddArgType(tmp -> name) == DIRECT)
-            {
-                /* look for the label in label table */
-                p = findLabel(tmp -> name);
-                if(!p) /* label doesnt exist in label tabel, but, declered in instruction command */
-                {
-                    numOfErrors++;
-                    printError(MISSING_LBL_AS_ARG, tmp -> name);
-                }
-            }
-            i++;
-            tmp = tmp -> next;
-        }
-    }        
-}
 
 
 /* reset all globals */

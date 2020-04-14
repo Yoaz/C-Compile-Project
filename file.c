@@ -143,15 +143,15 @@ void writeExtern(fileObject *fileOb, char *lbl, int *value)
 {
     char *fname;
 
-    if(!fileOb -> ext) /* ent file handler isn't open already */
+    if(!fileOb -> ext) /* ext file handler isn't open already */
     {
         fname = (char *) safeAlloc(sCalloc, (strlen(fileOb -> rawName) + strlen(EXT_ET) + 1), sizeof(char));
         strcpy(fname, fileOb -> rawName);
         strcat(fname, EXT_ET);
-        fopen(fname, WRITE_ONLY); /* if already exist, rewrite as this is first file open for this program loop */
+        fileOb -> ext = fopen(fname, WRITE_ONLY); /* if already exist, rewrite as this is first file open for this program loop */
+        free(fname);
     }
 
-    fprintf(fileOb -> ent, "%s\t%d\n", lbl, value);
+    fprintf(fileOb -> ext, "%s\t%04d\n", lbl, value);
 
-    free(fname);
 }

@@ -148,7 +148,7 @@ boolean whiteCh(char ch)
 void resetSpLine(spLine *p)
 {
     argNode *a, *b; /* for args list reset */
-
+    
     if(p)
 	{
         p -> lblFlag = false;
@@ -938,3 +938,27 @@ ARE whichARE(char *arg)
 
 
 
+/* validates rather a label declared as an argument in instruction command, exist in label table */
+boolean validateLabelAsArg(labelNode *p)
+{
+    argNode *tmp;
+    int i;
+
+    tmp = pSpLine -> argsHead;
+    i = 1;
+
+    while(tmp)
+    {
+        if(whichAddArgType(tmp -> name) == DIRECT)
+        {
+            /* look for the label in label table */
+            p = findLabel(tmp -> name);
+            if(!p) /* label doesnt exist in label tabel, but, declered in instruction command */
+                return false;
+        }
+        i++;
+        tmp = tmp -> next;
+    }
+
+    return true;        
+}

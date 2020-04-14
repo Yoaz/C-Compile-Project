@@ -18,6 +18,7 @@
 #define UPDATE_ONLY "a"
 #define UPDATE_READ "a+"
 
+/* file object - will hold raw file name without extenstions and all related file handlers (FILE *) */
 typedef struct
 {
     char *rawName;
@@ -27,15 +28,10 @@ typedef struct
 
 /*                                                                                                           *\
 ********************************************* FUNCTION PROTOTYPE **********************************************
-\*  
+\*                                                                                                           */
 
-/* will fetch line from current FILE * and will parse according to the line content in case of no errors */
 void fetchLine(FILE *, char **);
-
 void writeEntry(fileObject *, char *, int *);
-
 void writeExtern(fileObject *, char *, int *);
-
 fileObject *fetchFile(char *, char *);
-
 void closeFile(fileObject *);

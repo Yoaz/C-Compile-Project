@@ -4,6 +4,7 @@
 
 #include "globals.h"
 #include "errors.h"
+#include "structs.h" /* for labelNode */
 
 
 extern numOfErrors; 
@@ -46,3 +47,4 @@ boolean isReg(char *);
 boolean fetchArgs(char *);
 boolean legitNumInstArgs();
 argAddType whichAddArgType(char *);
+boolean validateLabelAsArg(labelNode *);
