@@ -10,10 +10,11 @@
 #include "globals.h"
 #include "errors.h"
 
-#define WORD_CHAR_SIZE 2 /* array of 2 chars = 16bits, word require 15bits, 1 extra */
+#define WORD_TOTAL_BITS 15 /* size of bits each word requires */
 #define ARE_BITS 3 /* abseloute, rellocated, exernal bits count */
-#define OP_TYPE_BITS 4 /* same for dest/src op */
+#define OP_BITS 4 /* same for dest/src op */
 #define OPCODE_BITS 4 /* opcode bits count */
+
 
 extern int IC; 
 extern int DC; 
@@ -46,23 +47,33 @@ labelNode *lblLast;
 ***************************************************************************************************************
 \*                                                                                                           */
 
-#define bitOn(arr,k)     ( arr[(k/8)] |= (1 << (k%8) ) ) /* turn bit on in array by index of bit - macro */
-#define bitOff(arr,k)   ( arr[(k/8)] &= ~(1 << (k%8) ) /* turn bit off in array by index of bit - macro */
-#define checkBit(arr,k)  ( arr[(k/8)] & (1 << (k%8)) ) /* check bit status in array by index of bit - macro */ 
-
+#define setBit(var,pos) ((var) |= (1 << (pos))) /* set bit n in int p macro */
+#define checkBit(var,pos) ((var) & (1<<(pos)))
 
 /* define word/one line translate db node - 15bits (1 bit extra, since we have char[2] = 16 bits) */
-typedef union word{
-   char opcodeWord[WORD_CHAR_SIZE]; /* first word in each line translation */
-   char srcOp[WORD_CHAR_SIZE]; /* source operand from line if exist */
-   char destOp[WORD_CHAR_SIZE]; /* destenation operand from line if exist */  
-}word;
+typedef struct instWord
+{
+	char word[WORD_TOTAL_BITS]; /* The word in binary */
+	boolean isRegister;	 /* Indicates if the word is register */
+
+	struct instWord *next; /* Pointer to the next inst-mem-word */
+}instWord;
+
+typedef struct dtWord{
+   char word[WORD_TOTAL_BITS];
+   struct dtWord *next;
+}dtWord;
+
+dtWord *dataLstHead, *dataLstLast; /* head of data list and last node in data list pointers */
 
 
 
+/*                                                                                                           *\
+********************************************* FUNCTION PROTOTYPE **********************************************
+\*                                                                                                           */
 
 
-/* functions prototype */
+
 void labelCheck(char*);
 void checkSyntax(char*);
 int checkExist(char*);
@@ -75,5 +86,12 @@ long getSymbolVal(labelNode *);
 void freeLblTable();
 labelNode *findLabel(char *);
 void printArgTabel();
+
+dtWord *setDataWord(int );
+instWord *setFirstInstWord(int , addType , addType , ARE );
+void addDtWordToDtList(dtWord **);
+signed int binCharArrToDec(dtWord *);
+void freeDtList();
+void printWord();
 
 #endif

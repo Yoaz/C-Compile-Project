@@ -54,7 +54,7 @@ typedef enum
 	ADD_SRC = 0,
 	ADD_DEST = 1,
 	ADD_TYPE_COUNT
-} AddType;
+} addType;
 
 /* Types of instruction command line arguments */
 typedef enum
@@ -121,7 +121,6 @@ typedef struct
 	char *cmd; /* will hold the command in current line */
 	argNode *argsHead;	/* Pointer to the head of arguments object (if there isn't, then NULL) */ 
 	int numArgs; /* counter for arguments provided via line */
-
 }spLine;
 
 /* pointer to split line object */

@@ -227,10 +227,123 @@ void increaseDC()
 }
 
 
+/* Creates the first instruction word in memory. */
+instWord *setFirstInstWord(int opCode, addType srcOp, addType destOp, ARE are)
+{
+	instWord *newWord = (instWord *)safeAlloc(sCalloc, 1, sizeof(instWord));
+	unsigned long mask;
+	int i, ind = (WORD_TOTAL_BITS - 1); /* start from the last index -> binary works backwards */
+					  
+
+	/* Converts the fields to binary */
+	for (i = 0, mask = 1; i < ARE_BITS; i++, mask <<= 1)
+		newWord -> word[ind--] = mask & are ? '\1' : '\0';
+	for (i = 0, mask = 1; i < OP_BITS; i++, mask <<= 1)
+		newWord -> word[ind--] = mask & destOp ? '\1' : '\0';
+	for (i = 0, mask = 1; i < OP_BITS; i++, mask <<= 1)
+		newWord -> word[ind--] = mask & srcOp ? '\1' : '\0';
+	for (i = 0, mask = 1; i < OPCODE_BITS; i++, mask <<= 1)
+		newWord -> word[ind--] = mask & opCode ? '\1' : '\0';
+
+	return newWord;
+}
 
 
-/* will create the first word for instruction commands */
-void firstWord()
+/* Creates data word node */
+dtWord *setDataWord(int arg)
+{
+	dtWord *newWord = (dtWord *)safeAlloc(sCalloc, 1, sizeof(dtWord));
+	unsigned long mask;
+	int i, ind = (WORD_TOTAL_BITS - 1); /* from last index -> binary works backwards */
+					
+	/* Converts the fields to binary */
+	for (i = 0, mask = 1; i < WORD_TOTAL_BITS; i++, mask <<= 1)
+		newWord -> word[ind--] = mask & arg ? '1' : '0';
+
+	return newWord;
+}
+
+
+/* will add new data word node to end of list */
+void addDtWordToDtList(dtWord **newWord)
 {
 
+   if(!*newWord) /* safety major */
+      return;
+
+
+   if(!dataLstHead) /* list is empty */
+   {
+      dataLstHead = *newWord; /* data list head points to the new data word */
+      dataLstLast = *newWord; /* also this is last data list node */
+      return;
+   }
+
+   dataLstLast -> next = *newWord; /* connect new data word to the end of the list */
+   dataLstLast = *newWord; /* move last data node list pointer to new attached node */
+
+}
+
+
+/* recieve a pointer to word and return the value of the word in an unsigned int */
+int binCharArrToDec(dtWord *wd)
+{
+   int i;
+   unsigned int result = 0;
+
+   for(i=0; i <WORD_TOTAL_BITS; i++)
+   {
+      result = (result << 1) | (wd -> word[i] == '1');
+   }
+   
+   if(atoi(pSpLine -> argsHead -> name) < 0)
+   {
+      setBit(result, WORD_TOTAL_BITS - 1);
+   }
+
+   for(i=0; i <WORD_TOTAL_BITS; i++)
+   {
+      if(checkBit(result,i))
+         printf("-%d", i);
+   }
+   printf("\n");
+   return result;
+}
+
+
+/* will free current global data words list */ 
+void freeDtList()
+{
+   dtWord *p;
+   
+   if(!dataLstHead)
+      return;
+      
+   p = dataLstHead -> next;
+
+   while(dataLstHead)
+   {
+      free(dataLstHead); /* release node */
+   
+      if(!p) /* only one node in lbl table, break */
+         break;
+
+      dataLstHead = p; /* move lblHead to point next node in table (if exist) */
+      p = p -> next;
+   }
+   
+   dataLstHead = NULL;
+   dataLstHead = NULL;
+
+    return;
+}
+
+/* Debug */
+void printWord(dtWord *memWord)
+{
+	int i;
+	for (i = 0; i < WORD_TOTAL_BITS; i++)
+		printf("%c", memWord -> word[i]);
+
+	puts("");
 }

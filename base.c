@@ -32,6 +32,7 @@ void initiate(char *fileName)
         }
     }
 
+    freeDtList();
     /* default: second or first round had issues */
     printLblTabel(); /* debug */
      /*TODO: perhaps to merge one func freeAll to free all databases at end each file loop */
@@ -46,6 +47,9 @@ boolean firstRound(FILE *fp)
 {
     char *line;
     IC=0, DC=0, numOfErrors = 0, numColumn = 0; /* reset global vars */
+    argNode *a; /* to run on args */
+    dtWord *curDW; /* to write data word node for .data, .string legit commands */
+    char *tmp; /* to run on .string string argument chars */
     
     /* As long as not end of file keep fetch lines from file */
     while(1)
@@ -107,6 +111,16 @@ boolean firstRound(FILE *fp)
                 addLabel(pSpLine -> label, L_DATA, DC);
             }
 
+            /* we know argsHead exist as otherwise .data without arguments would not pass splitLine parsing as illegal */
+            for(a = pSpLine -> argsHead; a; a = a -> next) /* run on args */
+            {
+                curDW = setDataWord(atoi(a -> name)); /* set new data word */
+                addDtWordToDtList(&curDW);  /* add to data word to data word list */
+                printWord(curDW); /* debug */
+                printf("The word in decimal: %d\n", binCharArrToDec(curDW)); /* debug */
+                curDW = NULL; 
+            }
+
             increaseDC(); /* will increase data count depend on type of directive command */
         }
         
@@ -117,6 +131,20 @@ boolean firstRound(FILE *fp)
             {
                 addLabel(pSpLine -> label, L_STRING, DC);
             }
+
+            /* we know argsHead exist as otherwise .string without arguments would not pass splitLine parsing as illegal */
+            for(tmp = (pSpLine -> argsHead ->name) + 1; tmp < (pSpLine -> argsHead ->name) + (strlen(pSpLine -> argsHead ->name) - 1); tmp++) /* run on string chars minus "" marks */
+            {
+                curDW = setDataWord(*tmp); /* set new data word */
+                addDtWordToDtList(&curDW);  /* add to data word to data word list */
+                printWord(curDW); /* debug */
+            }
+            /* set end of string '/0' data word to data word list */
+            curDW = setDataWord(STRING_END); /* set new data word */
+            addDtWordToDtList(&curDW);  /* add to data word to data word list */
+            printWord(curDW); /* debug */
+
+            curDW = NULL; 
 
             increaseDC(); /* will increase data count depend on type of directive command */
         }
@@ -153,7 +181,7 @@ boolean secondRound(fileObject *fileOb)
     labelNode *p; 
     argNode *a; /* run on args tmp */
     char *line;
-    int i = 1;
+    int i = 0;
 
     /* As long as not end of file keep fetch lines from file */
     while(1)
@@ -231,7 +259,7 @@ boolean secondRound(fileObject *fileOb)
 
                 while(a) /* run on args */
                 {
-                    i++; /* using i counter for arg count, start from i = 1 since each instruction requires at least 1 word */
+                    i++; /* using i counter for arg count */
 
                     if(whichAddArgType(a -> name) == DIRECT) /* label as argument */
                     {

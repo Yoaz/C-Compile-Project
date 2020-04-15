@@ -17,7 +17,7 @@ spLine *pSpLine; /* global splitted line variable */
 
 
 /* initiate global struct array with all instruction command corresponded to compitable arg type */
- struct instructions ICS[NUM_INSTRUCTION_COMMANDS] /* Array of machine instruction */ = {
+ struct instructions ICS[NUM_INSTRUCTION_COMMANDS] /* Array of machine instructions */ = {
 	{"mov", {{IMMEDIATE, DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}, {DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}}},
 	{"cmp", {{IMMEDIATE, DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}, {IMMEDIATE, DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}}},
 	{"add", {{IMMEDIATE, DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}, {DIRECT, REF_REG, DIRECT_REG, NULL_METHOD}}},
