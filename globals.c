@@ -6,7 +6,6 @@
 
 #include "globals.h"
 
-char *fname; /* will hold current file name */
 int IC; /* instruction counter */
 int DC; /* data counter */
 int numRow; /* current file row index */

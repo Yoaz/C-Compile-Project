@@ -79,24 +79,6 @@ void updateLblTable()
 }
 
 
-/* Returns the given symbol type. */
-labelType getLabelType(labelNode *label)
-{
-	if(label)
-		return label -> type;
-	return UNDEFINED_LABEL;
-}
-
-
-/* Returns the given symbol value.  */
-long getSymbolVal(labelNode *label)
-{
-	if (label)
-		return label -> value;
-	return 0;
-}
-
-
 /* will free current global label list */ 
 void freeLblTable()
 {
@@ -170,6 +152,57 @@ void printArgTabel()
 ***************************************************************************************************************
 \*                                                                                                           */
 
+/*********************** general **********************/
+
+/* recieve a pointer to word and return the value of the word in an signed int */
+int binCharArrToDec(dtWord *wd)
+{
+   int i;
+   signed short int result = 0; /* short since we are having each word in size 15 bits */
+
+   for(i=0; i <WORD_TOTAL_BITS; i++)
+   {
+      result = (result << 1) | (wd -> word[i] == '1'); /* set bits in result according to char array '1', '0' */
+   }
+   
+   if(wd -> word[0] == '1') /* case of negetive number, set last bit in result to be 1 */
+   {
+      setBit(result, (sizeof(result) * 8) - 1);
+   }
+
+   /* debug */
+   for(i=0; i <(sizeof(result) * 8); i++)
+   {
+      if(checkBit(result,i))
+         printf("-%d", i);
+   }
+   printf("\n");
+
+   return result;
+}
+
+
+/* Debug */
+void printWord(dtWord *memWord)
+{
+	int i;
+	for (i = 0; i < WORD_TOTAL_BITS; i++)
+		printf("%c", memWord -> word[i]);
+
+	puts("");
+}
+
+
+/*********************** instruction **********************/
+
+/* increase global var IC by how much current instruction line memory requirement */
+void increaseIC()
+{
+   IC += ceil(instLineMemReq()); /* we use ceil() for cases such 'add r1, #-3',
+                                 instLineMemReq() will preduce 2.5 words, though
+                                 actually requires 3 words */
+}
+
 
 /* compute how much memory (word) each instruction operand requires, 0.5 - reg, others 1 */
 float opMemReq(char *op)
@@ -202,14 +235,149 @@ float instLineMemReq()
 }
 
 
-/* increase global var IC by how much current instruction line memory requirement */
-void increaseIC()
+/* Creates the first instruction word in memory. */
+instWord *setFirstInstWord(int opCode, addType srcOp, addType destOp, ARE are)
 {
-   IC += ceil(instLineMemReq()); /* we use ceil() for cases such 'add r1, #-3',
-                                 instLineMemReq() will preduce 2.5 words, though
-                                 actually requires 3 words */
+	instWord *newWord = (instWord *)safeAlloc(sCalloc, 1, sizeof(instWord));
+	unsigned long mask;
+	int i, ind = (WORD_TOTAL_BITS - 1); /* start from the last index -> binary works backwards */
+					  
+
+	/* Converts the fields to binary */
+	for (i = 0, mask = 1; i < ARE_BITS; i++, mask <<= 1)
+		newWord -> word[ind--] = mask & are ? '1' : '0';
+	for (i = 0, mask = 1; i < OP_BITS; i++, mask <<= 1)
+		newWord -> word[ind--] = mask & destOp ? '1' : '0';
+	for (i = 0, mask = 1; i < OP_BITS; i++, mask <<= 1)
+		newWord -> word[ind--] = mask & srcOp ? '1' : '0';
+	for (i = 0, mask = 1; i < OPCODE_BITS; i++, mask <<= 1)
+		newWord -> word[ind--] = mask & opCode ? '1' : '0';
+
+	return newWord;
 }
 
+
+/* creates the first instruction word in memory */
+instWord *setInstArgWord(int value, ARE are, argAddType argType, ...)
+{
+	instWord *newWord = (instWord *)safeAlloc(sCalloc, 1, sizeof(instWord));
+	unsigned long mask;
+	int i, ind = (WORD_TOTAL_BITS - 1); /* start from the last index -> binary works backwards */
+   va_list ap;
+   addType adType; /* either src, either dest */
+
+   /* set the word depend on the type of instruction argument passed */				  
+   switch (argType)
+   {
+   
+   /* number or label -> both the same in the manner of 12 bits for value, 3 bits for ARE */
+   case DIRECT:
+   case IMMEDIATE:
+      /* Converts the fields to binary */
+      for (i = 0, mask = 1; i < ARE_BITS; i++, mask <<= 1)
+         newWord -> word[ind--] = mask & are ? '1' : '0';
+      for (i = 0, mask = 1; i < (WORD_TOTAL_BITS - ARE_BITS); i++, mask <<= 1)
+         newWord -> word[ind--] = mask & value ? '1' : '0';
+      break;
+   /* register either by ref or direct -> both the same in the manner of 3 bits for value, 3 bits for ARE */
+   case REF_REG:
+   case DIRECT_REG:
+      /* if register, either by direct or by reference, 
+       * one more variable is passed to this func which is 
+       * either arg type is source or destination type of arg */
+      va_start(ap, argType);
+      adType = va_arg(ap, addType); /* fetch the extra argument passed to this func */
+
+      if(adType == ADD_DEST) /* register or refference register as DESTINATION argument */ 
+      {
+         /* Converts the fields to binary */
+         for (i = 0, mask = 1; i < ARE_BITS; i++, mask <<= 1)
+            newWord -> word[ind--] = mask & are ? '1' : '0';
+            ind -= REG_BITS; /* to reach bits 6-8 and keep bits 3-6 empty(0 as used calloc) */
+         for (i = 0, mask = 1; i < REG_BITS; i++, mask <<= 1) /* save reg num in bits 6-8 */
+            newWord -> word[ind--] = mask & value ? '1' : '0';         
+      }
+      
+      else if(adType == ADD_SRC) /* register or refference register as SOURCE argument */
+      {
+         /* Converts the fields to binary */
+         for (i = 0, mask = 1; i < ARE_BITS; i++, mask <<= 1)
+            newWord -> word[ind--] = mask & are ? '1' : '0';
+         for (i = 0, mask = 1; i < REG_BITS; i++, mask <<= 1) /* save reg num in bits 3-6 */
+            newWord -> word[ind--] = mask & value ? '1' : '0';     
+      }
+
+      newWord -> isReg = true; /* set flag register for cases of reg in src and in dest */
+   }
+
+	return newWord;
+}
+
+
+/* will add new data word node to end of list */
+void addInstWordToInstList(instWord **newWord)
+{
+   int i;
+
+   if(!*newWord) /* safety major */
+      return;
+
+
+   if(!instLstHead) /* list is empty */
+   {
+      instLstHead = *newWord; /* inst list head points to the new inst word */
+      instLstLast = *newWord; /* also this is last int list node */
+      return;
+   }
+
+   /* list isn't empty, check if last node is register and current new node is register as well */
+   if(instLstLast -> isReg && (*newWord) -> isReg) /* last node is a register and current new node is register */
+   {
+      /* implement 'or' bitwise on two words in order to merge words */
+      for (i = 0; i < WORD_TOTAL_BITS; i++)
+         if (instLstLast -> word[i] || (*newWord) -> word[i])
+            instLstLast -> word[i] = '1';
+
+            free(*newWord); /* it was merge with last instruction node with list, so free */
+            return;
+   }
+   
+   /* else not case of reg as src and as dest */
+   instLstHead -> next = *newWord; /* connect new word to the end of the list */
+   instLstLast = *newWord; /* move last inst node list pointer to new attached node */
+
+}
+
+
+/* will free current global instruction words list */ 
+void freeInstList()
+{
+   instWord *p;
+   
+   if(!instLstHead)
+      return;
+      
+   p = instLstHead -> next;
+
+   while(instLstHead)
+   {
+      free(instLstHead); /* release node */
+   
+      if(!p) /* only one node in lbl table, break */
+         break;
+
+      instLstHead = p; /* move lblHead to point next node in table (if exist) */
+      p = p -> next;
+   }
+   
+   instLstHead = NULL;
+   instLstLast = NULL;
+
+    return;
+}
+
+
+/*********************** data **********************/
 
 /* increase global var DC by size of .data/.string argument size */
 void increaseDC()
@@ -224,28 +392,6 @@ void increaseDC()
       p = pSpLine -> argsHead -> name; /* case .string, we know argsHead exist */
       DC += (strlen(p) - 2) + 1; /* -2 to exclude quatation marks (""), +1 for null-terminator */
    }
-}
-
-
-/* Creates the first instruction word in memory. */
-instWord *setFirstInstWord(int opCode, addType srcOp, addType destOp, ARE are)
-{
-	instWord *newWord = (instWord *)safeAlloc(sCalloc, 1, sizeof(instWord));
-	unsigned long mask;
-	int i, ind = (WORD_TOTAL_BITS - 1); /* start from the last index -> binary works backwards */
-					  
-
-	/* Converts the fields to binary */
-	for (i = 0, mask = 1; i < ARE_BITS; i++, mask <<= 1)
-		newWord -> word[ind--] = mask & are ? '\1' : '\0';
-	for (i = 0, mask = 1; i < OP_BITS; i++, mask <<= 1)
-		newWord -> word[ind--] = mask & destOp ? '\1' : '\0';
-	for (i = 0, mask = 1; i < OP_BITS; i++, mask <<= 1)
-		newWord -> word[ind--] = mask & srcOp ? '\1' : '\0';
-	for (i = 0, mask = 1; i < OPCODE_BITS; i++, mask <<= 1)
-		newWord -> word[ind--] = mask & opCode ? '\1' : '\0';
-
-	return newWord;
 }
 
 
@@ -285,32 +431,6 @@ void addDtWordToDtList(dtWord **newWord)
 }
 
 
-/* recieve a pointer to word and return the value of the word in an unsigned int */
-int binCharArrToDec(dtWord *wd)
-{
-   int i;
-   unsigned int result = 0;
-
-   for(i=0; i <WORD_TOTAL_BITS; i++)
-   {
-      result = (result << 1) | (wd -> word[i] == '1');
-   }
-   
-   if(atoi(pSpLine -> argsHead -> name) < 0)
-   {
-      setBit(result, WORD_TOTAL_BITS - 1);
-   }
-
-   for(i=0; i <WORD_TOTAL_BITS; i++)
-   {
-      if(checkBit(result,i))
-         printf("-%d", i);
-   }
-   printf("\n");
-   return result;
-}
-
-
 /* will free current global data words list */ 
 void freeDtList()
 {
@@ -333,17 +453,7 @@ void freeDtList()
    }
    
    dataLstHead = NULL;
-   dataLstHead = NULL;
+   dataLstLast = NULL;
 
     return;
-}
-
-/* Debug */
-void printWord(dtWord *memWord)
-{
-	int i;
-	for (i = 0; i < WORD_TOTAL_BITS; i++)
-		printf("%c", memWord -> word[i]);
-
-	puts("");
 }

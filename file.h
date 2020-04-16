@@ -18,11 +18,14 @@
 #define UPDATE_ONLY "a"
 #define UPDATE_READ "a+"
 
+extern IC;
+extern DC;
+
 /* file object - will hold raw file name without extenstions and all related file handlers (FILE *) */
 typedef struct
 {
     char *rawName;
-    FILE *src, *ent, *ext;
+    FILE *src, *ent, *ext, *obj;
 }fileObject;
 
 
@@ -31,7 +34,8 @@ typedef struct
 \*                                                                                                           */
 
 void fetchLine(FILE *, char **);
-void writeEntry(fileObject *, char *, int *);
-void writeExtern(fileObject *, char *, int *);
+void writeEntry(fileObject *, char *, int);
+void writeExtern(fileObject *, char *, int);
+void writeObject(fileObject *, int, int, int);
 fileObject *fetchFile(char *, char *);
 void closeFile(fileObject *);

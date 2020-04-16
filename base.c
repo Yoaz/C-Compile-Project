@@ -110,7 +110,8 @@ boolean firstRound(FILE *fp)
             {
                 addLabel(pSpLine -> label, L_DATA, DC);
             }
-
+            
+            /* build data word and add to data word list */
             /* we know argsHead exist as otherwise .data without arguments would not pass splitLine parsing as illegal */
             for(a = pSpLine -> argsHead; a; a = a -> next) /* run on args */
             {
@@ -132,17 +133,20 @@ boolean firstRound(FILE *fp)
                 addLabel(pSpLine -> label, L_STRING, DC);
             }
 
+            /* build data word and add to data word list */
             /* we know argsHead exist as otherwise .string without arguments would not pass splitLine parsing as illegal */
             for(tmp = (pSpLine -> argsHead ->name) + 1; tmp < (pSpLine -> argsHead ->name) + (strlen(pSpLine -> argsHead ->name) - 1); tmp++) /* run on string chars minus "" marks */
             {
                 curDW = setDataWord(*tmp); /* set new data word */
                 addDtWordToDtList(&curDW);  /* add to data word to data word list */
                 printWord(curDW); /* debug */
+                printf("The word in char: %c\n", binCharArrToDec(curDW)); /* debug */
             }
-            /* set end of string '/0' data word to data word list */
+            /* set end of string '/0' data word node to data word list */
             curDW = setDataWord(STRING_END); /* set new data word */
             addDtWordToDtList(&curDW);  /* add to data word to data word list */
             printWord(curDW); /* debug */
+            printf("The word in char: %c\n", binCharArrToDec(curDW)); /* debug */
 
             curDW = NULL; 
 
@@ -176,12 +180,12 @@ return true;
 /* second round looping throug the file content to complete necesery parsing */
 boolean secondRound(fileObject *fileOb)
 {
+    int i = 0, sumIC = IC; /* sumIC - before IC reset for use in OBJECT file first creation, DC we have, not reseting */  
     IC = 0;
     rewind(fileOb -> src); /* Setting FILE* pointer back to begining of file */
     labelNode *p; 
     argNode *a; /* run on args tmp */
     char *line;
-    int i = 0;
 
     /* As long as not end of file keep fetch lines from file */
     while(1)
@@ -259,7 +263,7 @@ boolean secondRound(fileObject *fileOb)
 
                 while(a) /* run on args */
                 {
-                    i++; /* using i counter for arg count */
+                    i++; /* using i counter for arg address order count */
 
                     if(whichAddArgType(a -> name) == DIRECT) /* label as argument */
                     {
@@ -281,6 +285,8 @@ boolean secondRound(fileObject *fileOb)
                     }
                     a = a -> next;
                 }
+
+                writeObject(fileOb, 0, 0, sumIC);
             }
 
             increaseIC(); /* will increase data count depend on type of instruction command */ 

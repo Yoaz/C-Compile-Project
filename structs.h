@@ -1,7 +1,6 @@
 #ifndef STRUCT_H
 #define STRUCT_H
 
-#include <stdio.h>
 #include <string.h>
 #include <ctype.h> /* for ceil() use etc */
 #include <stdlib.h>
@@ -14,6 +13,7 @@
 #define ARE_BITS 3 /* abseloute, rellocated, exernal bits count */
 #define OP_BITS 4 /* same for dest/src op */
 #define OPCODE_BITS 4 /* opcode bits count */
+#define REG_BITS 3 /* register argument bits count */
 
 
 extern int IC; 
@@ -48,17 +48,20 @@ labelNode *lblLast;
 \*                                                                                                           */
 
 #define setBit(var,pos) ((var) |= (1 << (pos))) /* set bit n in int p macro */
-#define checkBit(var,pos) ((var) & (1<<(pos)))
+#define checkBit(var,pos) ((var) & (1<<(pos)))  /* check bit in int status macro */
 
-/* define word/one line translate db node - 15bits (1 bit extra, since we have char[2] = 16 bits) */
+/* define word for instructions type */
 typedef struct instWord
 {
 	char word[WORD_TOTAL_BITS]; /* The word in binary */
-	boolean isRegister;	 /* Indicates if the word is register */
+	boolean isReg;	 /* Indicates if the word is register */
 
 	struct instWord *next; /* Pointer to the next inst-mem-word */
 }instWord;
 
+instWord *instLstHead, *instLstLast; /* head of instruction list and last node in instruction list pointers */
+
+/* define word for data type */
 typedef struct dtWord{
    char word[WORD_TOTAL_BITS];
    struct dtWord *next;
@@ -73,22 +76,21 @@ dtWord *dataLstHead, *dataLstLast; /* head of data list and last node in data li
 \*                                                                                                           */
 
 
-
-void labelCheck(char*);
-void checkSyntax(char*);
-int checkExist(char*);
+/* label */
 void updateLblTable();
 void addLabel(char *, labelType, int);
-void insertLabel(char*);
 void printLblTabel();
-labelType getLabelType(labelNode *);
-long getSymbolVal(labelNode *);
 void freeLblTable();
 labelNode *findLabel(char *);
 void printArgTabel();
 
+/* word */
 dtWord *setDataWord(int );
+float instLineMemReq();
 instWord *setFirstInstWord(int , addType , addType , ARE );
+instWord *setInstArgWord(int, ARE, argAddType, ...);
+void addInstWordToInstList(instWord **);
+void freeInstList();
 void addDtWordToDtList(dtWord **);
 signed int binCharArrToDec(dtWord *);
 void freeDtList();
