@@ -2,6 +2,7 @@
 
 #include "globals.h"
 #include "errors.h"
+#include "structs.h" /* for word nodes in writeObject() */
 
 /* The file extentions */
 #define SRC_ET ".as"
@@ -21,6 +22,7 @@
 extern IC;
 extern DC;
 
+
 /* file object - will hold raw file name without extenstions and all related file handlers (FILE *) */
 typedef struct
 {
@@ -36,6 +38,7 @@ typedef struct
 void fetchLine(FILE *, char **);
 void writeEntry(fileObject *, char *, int);
 void writeExtern(fileObject *, char *, int);
-void writeObject(fileObject *, int, int, int);
+void writeObjectHeadLine(fileObject *, int, int);
+void writeObject(fileObject *, int, int);
 fileObject *fetchFile(char *, char *);
 void closeFile(fileObject *);

@@ -154,18 +154,18 @@ void printArgTabel()
 
 /*********************** general **********************/
 
-/* recieve a pointer to word and return the value of the word in an signed int */
-int binCharArrToDec(dtWord *wd)
+/* recieve a bits char array and return the value of the word in an signed int */
+int binCharArrToDec(char word[])
 {
    int i;
    signed short int result = 0; /* short since we are having each word in size 15 bits */
 
    for(i=0; i <WORD_TOTAL_BITS; i++)
    {
-      result = (result << 1) | (wd -> word[i] == '1'); /* set bits in result according to char array '1', '0' */
+      result = (result << 1) | (word[i] == '1'); /* set bits in result according to char array '1', '0' */
    }
    
-   if(wd -> word[0] == '1') /* case of negetive number, set last bit in result to be 1 */
+   if(word[0] == '1') /* case of negetive number, set last bit in result to be 1 */
    {
       setBit(result, (sizeof(result) * 8) - 1);
    }
@@ -236,7 +236,7 @@ float instLineMemReq()
 
 
 /* Creates the first instruction word in memory. */
-instWord *setFirstInstWord(int opCode, addType srcOp, addType destOp, ARE are)
+instWord *setFirstInstWord(int opCode, argAddType src, argAddType dest, ARE are)
 {
 	instWord *newWord = (instWord *)safeAlloc(sCalloc, 1, sizeof(instWord));
 	unsigned long mask;
@@ -247,9 +247,9 @@ instWord *setFirstInstWord(int opCode, addType srcOp, addType destOp, ARE are)
 	for (i = 0, mask = 1; i < ARE_BITS; i++, mask <<= 1)
 		newWord -> word[ind--] = mask & are ? '1' : '0';
 	for (i = 0, mask = 1; i < OP_BITS; i++, mask <<= 1)
-		newWord -> word[ind--] = mask & destOp ? '1' : '0';
+		newWord -> word[ind--] = mask & dest ? '1' : '0';
 	for (i = 0, mask = 1; i < OP_BITS; i++, mask <<= 1)
-		newWord -> word[ind--] = mask & srcOp ? '1' : '0';
+		newWord -> word[ind--] = mask & src ? '1' : '0';
 	for (i = 0, mask = 1; i < OPCODE_BITS; i++, mask <<= 1)
 		newWord -> word[ind--] = mask & opCode ? '1' : '0';
 
@@ -270,42 +270,42 @@ instWord *setInstArgWord(int value, ARE are, argAddType argType, ...)
    switch (argType)
    {
    
-   /* number or label -> both the same in the manner of 12 bits for value, 3 bits for ARE */
-   case DIRECT:
-   case IMMEDIATE:
-      /* Converts the fields to binary */
-      for (i = 0, mask = 1; i < ARE_BITS; i++, mask <<= 1)
-         newWord -> word[ind--] = mask & are ? '1' : '0';
-      for (i = 0, mask = 1; i < (WORD_TOTAL_BITS - ARE_BITS); i++, mask <<= 1)
-         newWord -> word[ind--] = mask & value ? '1' : '0';
-      break;
-   /* register either by ref or direct -> both the same in the manner of 3 bits for value, 3 bits for ARE */
-   case REF_REG:
-   case DIRECT_REG:
-      /* if register, either by direct or by reference, 
-       * one more variable is passed to this func which is 
-       * either arg type is source or destination type of arg */
-      va_start(ap, argType);
-      adType = va_arg(ap, addType); /* fetch the extra argument passed to this func */
+      /* number or label -> both the same in the manner of 12 bits for value, 3 bits for ARE */
+      case DIRECT:
+      case IMMEDIATE:
+         /* Converts the fields to binary */
+         for (i = 0, mask = 1; i < ARE_BITS; i++, mask <<= 1)
+            newWord -> word[ind--] = mask & are ? '1' : '0';
+         for (i = 0, mask = 1; i < (WORD_TOTAL_BITS - ARE_BITS); i++, mask <<= 1)
+            newWord -> word[ind--] = mask & value ? '1' : '0';
+         break;
+      /* register either by ref or direct -> both the same in the manner of 3 bits for value, 3 bits for ARE */
+      case REF_REG:
+      case DIRECT_REG:
+         /* if register, either by direct or by reference, 
+         * one more variable is passed to this func which is 
+         * either arg type is source or destination type of arg */
+         va_start(ap, argType);
+         adType = va_arg(ap, addType); /* fetch the extra argument passed to this func */
 
-      if(adType == ADD_DEST) /* register or refference register as DESTINATION argument */ 
-      {
-         /* Converts the fields to binary */
-         for (i = 0, mask = 1; i < ARE_BITS; i++, mask <<= 1)
-            newWord -> word[ind--] = mask & are ? '1' : '0';
-            ind -= REG_BITS; /* to reach bits 6-8 and keep bits 3-6 empty(0 as used calloc) */
-         for (i = 0, mask = 1; i < REG_BITS; i++, mask <<= 1) /* save reg num in bits 6-8 */
-            newWord -> word[ind--] = mask & value ? '1' : '0';         
-      }
-      
-      else if(adType == ADD_SRC) /* register or refference register as SOURCE argument */
-      {
-         /* Converts the fields to binary */
-         for (i = 0, mask = 1; i < ARE_BITS; i++, mask <<= 1)
-            newWord -> word[ind--] = mask & are ? '1' : '0';
-         for (i = 0, mask = 1; i < REG_BITS; i++, mask <<= 1) /* save reg num in bits 3-6 */
-            newWord -> word[ind--] = mask & value ? '1' : '0';     
-      }
+         if(adType == ADD_DEST) /* register or refference register as DESTINATION argument */ 
+         {
+            /* Converts the fields to binary */
+            for (i = 0, mask = 1; i < ARE_BITS; i++, mask <<= 1)
+               newWord -> word[ind--] = mask & are ? '1' : '0';
+               ind -= REG_BITS; /* to reach bits 6-8 and keep bits 3-6 empty(0 as used calloc) */
+            for (i = 0, mask = 1; i < REG_BITS; i++, mask <<= 1) /* save reg num in bits 6-8 */
+               newWord -> word[ind--] = mask & value ? '1' : '0';         
+         }
+         
+         else if(adType == ADD_SRC) /* register or refference register as SOURCE argument */
+         {
+            /* Converts the fields to binary */
+            for (i = 0, mask = 1; i < ARE_BITS; i++, mask <<= 1)
+               newWord -> word[ind--] = mask & are ? '1' : '0';
+            for (i = 0, mask = 1; i < REG_BITS; i++, mask <<= 1) /* save reg num in bits 3-6 */
+               newWord -> word[ind--] = mask & value ? '1' : '0';     
+          }
 
       newWord -> isReg = true; /* set flag register for cases of reg in src and in dest */
    }

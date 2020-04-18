@@ -43,9 +43,9 @@ enum registers{NULL_REG= -1, RO, R1, R2, R3, R4, R5, R6, R7};
 typedef enum
 {
 	NULL_ARE = -1,
-	EXTERNAL,
+	ABSOLUTE = 0,
 	RELOCATABLE,
-	ABSOLUTE
+	EXTERNAL
 } ARE;
 
 /* Addressing types */
@@ -62,8 +62,8 @@ typedef enum
 	NULL_METHOD = -1,
 	IMMEDIATE,
 	DIRECT,
-	DIRECT_REG,
 	REF_REG,
+	DIRECT_REG,
 	ARG_TYPE_COUNT
 } argAddType;
 

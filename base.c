@@ -27,12 +27,15 @@ void initiate(char *fileName)
         { 
             successFiles++; /* file went through the full parsing to meching code process with no errors, add to success files global counter */
             printLblTabel(); /* debug */
+            freeDtList();
+            freeInstList();
             closeFile(fileOb);
             return; /* next file if exist */
         }
     }
 
     freeDtList();
+    freeInstList();
     /* default: second or first round had issues */
     printLblTabel(); /* debug */
      /*TODO: perhaps to merge one func freeAll to free all databases at end each file loop */
@@ -118,7 +121,7 @@ boolean firstRound(FILE *fp)
                 curDW = setDataWord(atoi(a -> name)); /* set new data word */
                 addDtWordToDtList(&curDW);  /* add to data word to data word list */
                 printWord(curDW); /* debug */
-                printf("The word in decimal: %d\n", binCharArrToDec(curDW)); /* debug */
+                printf("The word in decimal: %d\n", binCharArrToDec(curDW -> word)); /* debug */
                 curDW = NULL; 
             }
 
@@ -140,13 +143,13 @@ boolean firstRound(FILE *fp)
                 curDW = setDataWord(*tmp); /* set new data word */
                 addDtWordToDtList(&curDW);  /* add to data word to data word list */
                 printWord(curDW); /* debug */
-                printf("The word in char: %c\n", binCharArrToDec(curDW)); /* debug */
+                printf("The word in char: %c\n", binCharArrToDec(curDW -> word)); /* debug */
             }
             /* set end of string '/0' data word node to data word list */
             curDW = setDataWord(STRING_END); /* set new data word */
             addDtWordToDtList(&curDW);  /* add to data word to data word list */
             printWord(curDW); /* debug */
-            printf("The word in char: %c\n", binCharArrToDec(curDW)); /* debug */
+            printf("The word in char: %c\n", binCharArrToDec(curDW -> word)); /* debug */
 
             curDW = NULL; 
 
@@ -180,12 +183,16 @@ return true;
 /* second round looping throug the file content to complete necesery parsing */
 boolean secondRound(fileObject *fileOb)
 {
-    int i = 0, sumIC = IC; /* sumIC - before IC reset for use in OBJECT file first creation, DC we have, not reseting */  
-    IC = 0;
-    rewind(fileOb -> src); /* Setting FILE* pointer back to begining of file */
+    int wordInDec, i = 0; 
+    rewind(fileOb -> src); /* Setting source FILE* pointer back to begining of file */
     labelNode *p; 
     argNode *a; /* run on args tmp */
+    instWord *curInstWord; /* temp instruction word pointer to hold current instruction word */
     char *line;
+
+    /* write to object file the headline of instructions and data count before IC reset */
+    writeObjectHeadLine(fileOb, IC, DC);
+    IC = 0;
 
     /* As long as not end of file keep fetch lines from file */
     while(1)
@@ -257,15 +264,40 @@ boolean secondRound(fileObject *fileOb)
         /* instruction */
         else
         {
-            if(pSpLine -> argsHead) /* instruction command with arguments */
+            if(pSpLine -> numArgs > 0) /* instruction command with arguments */
             {
-                a = pSpLine -> argsHead; /* to run on arguments */
+                /* create first instruction word which exist in all instruction commands, depend on # of args provided */
+                if(pSpLine -> numArgs == 1) /* one instruction argument -> source argument */
+                {
+                    /* command id  ,    src argument   ,    no dest argument    ,      ARE = ABSOLUTE */
+                    curInstWord = setFirstInstWord(getInstructionI(pSpLine -> cmd), whichAddArgType(pSpLine -> argsHead -> name), 0, ABSOLUTE);
+                    addInstWordToInstList(&curInstWord); /* add to instruction word list */
+                    writeObject(fileOb, IC + STARTING_ADDRS, binCharArrToDec(curInstWord -> word));
+                }
 
-                while(a) /* run on args */
+                else /* 2 arguments (ONLY LEFT OPTION) */
+                {
+                    /* command id  ,    src argument   ,    dest argument    ,      ARE = ABSOLUTE */
+                    curInstWord = setFirstInstWord(getInstructionI(pSpLine -> cmd), whichAddArgType(pSpLine -> argsHead -> name), whichAddArgType(pSpLine -> argsHead -> name), ABSOLUTE);
+                    addInstWordToInstList(&curInstWord); /* add to instruction word list */
+                    writeObject(fileOb, IC + STARTING_ADDRS, binCharArrToDec(curInstWord -> word));
+                }
+
+                /* run on args for arguments words write */
+                for(a = pSpLine -> argsHead; a; a = a -> next)
                 {
                     i++; /* using i counter for arg address order count */
-
-                    if(whichAddArgType(a -> name) == DIRECT) /* label as argument */
+                    
+                    /* IMMIDIET as argument */
+                    if(whichAddArgType(a -> name) == IMMEDIATE) 
+                    {
+                        wordInDec = atoi(a -> name + 1);
+                        /* value of number after '#' ,    ARE = ABSOLUTE    ,    type argument = IMMIDIET */
+                        curInstWord = setInstArgWord(wordInDec, whichARE(pSpLine -> argsHead -> name), whichAddArgType(pSpLine -> argsHead -> name));                       
+                    }
+                    
+                    /* LABEL as argument */
+                    else if(whichAddArgType(a -> name) == DIRECT) 
                     {
                         p = findLabel(a -> name); /* look for the arg label in label table */
 
@@ -273,20 +305,55 @@ boolean secondRound(fileObject *fileOb)
                         {
                             if(p -> type == L_EXTERNAL) /* label as arg, exist in label table and type external */
                             {
+                                wordInDec = 0; /* external label address is 0 */
+                                /* value = 0 (external) ,    ARE = EXTERNAL    ,    type argument = LABEL-EXTERNAL */
+                                curInstWord = setInstArgWord(wordInDec, whichARE(pSpLine -> argsHead -> name), whichAddArgType(pSpLine -> argsHead -> name));
                                 writeExtern(fileOb, p -> name, IC + STARTING_ADDRS + i); /* write to external file */
+                            }
+
+                            else /* label as arg, exist in label table and type entry */
+                            {
+                                wordInDec = p -> value; /* value of entry label is the word to be saved */
+                                /* value = label address (entry) ,    ARE = RELLOCATABLE    ,    type argument = LABEL-ENTRY */
+                                curInstWord = setInstArgWord(wordInDec, whichARE(pSpLine -> argsHead -> name), whichAddArgType(pSpLine -> argsHead -> name));
                             }
                         }   
                         else if(!p) /* label as argument, but, not declared as .extern or .entry, error */
                         {
                             numOfErrors++;
                             printError(MISSING_LBL_AS_ARG, a -> name);
-                        } 
-                                      
+                        }                           
                     }
-                    a = a -> next;
-                }
 
-                writeObject(fileOb, 0, 0, sumIC);
+                    /* REFERENCE REGISTER as argument */
+                    else if(whichAddArgType(a -> name) == REF_REG) 
+                    {
+                        wordInDec = atoi(a -> name + 2);
+                        /* value = register number after '*r' ,    ARE = ABSELOUTE    ,    type argument = REF_REG  ,   type add = src/dest */
+                        curInstWord = setInstArgWord(wordInDec, whichARE(pSpLine -> argsHead -> name), whichAddArgType(pSpLine -> argsHead -> name), i);
+                    }
+                    
+                    /* REGISTER as argument */
+                    else if(whichAddArgType(a -> name) == DIRECT_REG) 
+                    {
+                        wordInDec = atoi((a -> name) + 1);
+                        /* value = register number after 'r' ,    ARE = ABSELOUTE    ,    type argument = DIRECT_REG   ,  type add = src/dest */
+                        curInstWord = setInstArgWord(wordInDec, whichARE(pSpLine -> argsHead -> name), whichAddArgType(pSpLine -> argsHead -> name), i);
+                        
+                    }
+
+                    addInstWordToInstList(&curInstWord); /* add to instruction word list */
+                    writeObject(fileOb, IC + STARTING_ADDRS + i, binCharArrToDec(curInstWord -> word));
+                }
+            }
+
+            /* command with no arguments */
+            else
+            {
+                /* create first instruction word which exist in all instruction commands */
+                curInstWord = setFirstInstWord(getInstructionI(pSpLine ->cmd), 0, 0, ABSOLUTE);
+                addInstWordToInstList(&curInstWord); /* add to instruction word list */
+                writeObject(fileOb, IC + STARTING_ADDRS, binCharArrToDec(curInstWord -> word));
             }
 
             increaseIC(); /* will increase data count depend on type of instruction command */ 
@@ -297,9 +364,10 @@ boolean secondRound(fileObject *fileOb)
     /* if found errors in current file, second round failed, return false */
     if(numOfErrors)
         return false;
-
-/* second round success */
-return true;    
+    
+    writeDtListToObject(fileOb); /* write data list to object file */
+    /* second round success */
+    return true;    
 }
 
 

@@ -13,7 +13,7 @@ base.o: base.c base.h globals.h file.h errors.h parse.h structs.h
 globals.o: globals.c globals.h
 	gcc -c -Wall -ansi -pedantic globals.c -o globals.o 
 
-file.o: file.c file.h globals.h errors.h
+file.o: file.c file.h globals.h errors.h structs.h
 	gcc -c -Wall -ansi -pedantic file.c -o file.o
 
 parse.o: parse.c parse.h globals.h errors.h

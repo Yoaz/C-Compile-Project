@@ -52,6 +52,8 @@ void closeFile(fileObject *fileOb)
         fclose(fileOb -> ent);
     if(fileOb -> ext)
         fclose(fileOb -> ent);
+    if(fileOb -> obj)
+        fclose(fileOb -> ent);
 
     free(fileOb);    
 
@@ -157,8 +159,8 @@ void writeExtern(fileObject *fileOb, char *lbl, int value)
 }
 
 
-/* write object file */
-void writeObject(fileObject *fileOb, int addrs, int word, int ic)
+/* write the object file headline*/
+void writeObjectHeadLine(fileObject *fileOb, int ic, int dc)
 {
     char *fname;
     
@@ -171,10 +173,59 @@ void writeObject(fileObject *fileOb, int addrs, int word, int ic)
         fileOb -> obj = fopen(fname, WRITE_ONLY); /* if already exist, rewrite as this is first file open for this program loop */
         free(fname);
 
-        /* one time only write file headline "instruction file total counter       data file total counter" */
-        fprintf(fileOb -> obj, "\t%d\t%d\n", ic, DC);
+        /* one time only write file headline "instruction file total counter   /t    data file total counter" */
+        fprintf(fileOb -> obj, "\t%d\t%d\n", ic, dc);
     }
 
-    fprintf(fileOb -> obj, "%d\t%04o\n", addrs, word);
+}
 
+
+/* write object file */
+void writeObject(fileObject *fileOb, int addrs, int word)
+{
+    unsigned int len;
+    char *sNum;
+
+    if(word < 0) /* case of negetive number */
+    {
+        sNum = safeAlloc(sCalloc, 1, 5); /* allocate mem for octal num in string format */
+        sprintf(sNum, "%05o", word); /* copy octal digits to string */
+        len = strlen(sNum);
+        memmove(sNum, sNum + (len - 5), 5);
+        fprintf(fileOb -> obj, "%04d\t%.05s\n", addrs++, sNum); /* print to file part of the string number */
+        free(sNum);
+        return;
+    }
+    
+    /* no need to check if file handler of object exist as always writeObjectHeadline() called prior */
+    fprintf(fileOb -> obj, "%04d\t%05o\n", addrs, word);
+
+}
+
+
+/* write data list to end of object file */
+void writeDtListToObject(fileObject *fileOb)
+{
+    dtWord *d;
+    unsigned int len, addrs = IC + STARTING_ADDRS;
+    char *sNum;
+
+    if(!fileOb || !dataLstHead)
+        return;
+
+    for(d = dataLstHead; d; d = d -> next) /* run on args */
+    {
+        if(binCharArrToDec(d -> word) < 0) /* case of negetive number */
+        {
+            sNum = safeAlloc(sCalloc, 1, 5); /* allocate mem for octal num in string format */
+            sprintf(sNum, "%05o", binCharArrToDec(d -> word)); /* copy octal digits to string */
+            len = strlen(sNum);
+            memmove(sNum, sNum + (len - 5), 5);
+            fprintf(fileOb -> obj, "%04d\t%.05s\n", addrs++, sNum); /* print to file part of the string number */
+            free(sNum);
+        }
+
+        else
+            fprintf(fileOb -> obj, "%04d\t%05o\n", addrs++, binCharArrToDec(d -> word));
+    }
 }

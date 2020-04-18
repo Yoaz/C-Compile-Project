@@ -49,6 +49,7 @@ labelNode *lblLast;
 
 #define setBit(var,pos) ((var) |= (1 << (pos))) /* set bit n in int p macro */
 #define checkBit(var,pos) ((var) & (1<<(pos)))  /* check bit in int status macro */
+#define cleaBit(var,pos) ((var) &= (~(1) << (pos))) /* clear bit in int status macro */
 
 /* define word for instructions type */
 typedef struct instWord
@@ -87,12 +88,12 @@ void printArgTabel();
 /* word */
 dtWord *setDataWord(int );
 float instLineMemReq();
-instWord *setFirstInstWord(int , addType , addType , ARE );
+instWord *setFirstInstWord(int , argAddType , argAddType , ARE );
 instWord *setInstArgWord(int, ARE, argAddType, ...);
 void addInstWordToInstList(instWord **);
 void freeInstList();
 void addDtWordToDtList(dtWord **);
-signed int binCharArrToDec(dtWord *);
+signed int binCharArrToDec(char []);
 void freeDtList();
 void printWord();
 
