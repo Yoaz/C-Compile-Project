@@ -47,5 +47,4 @@ boolean isReg(char *);
 boolean fetchArgs(char *);
 boolean legitNumInstArgs();
 argAddType whichAddArgType(char *);
-boolean validateLabelAsArg(labelNode *);
 ARE whichARE(char *);

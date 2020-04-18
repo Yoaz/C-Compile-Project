@@ -303,7 +303,7 @@ boolean secondRound(fileObject *fileOb)
                             {
                                 wordInDec = 0; /* external label address is 0 */
                                 /* value = 0 (external) ,    ARE = EXTERNAL    ,    type argument = LABEL-EXTERNAL */
-                                curInstWord = setInstArgWord(wordInDec, whichARE(a-> name), whichAddArgType(a -> name));
+                                curInstWord = setInstArgWord(wordInDec, whichARE(a-> name) - 1, whichAddArgType(a -> name));
                                 writeExtern(fileOb, p -> name, IC + STARTING_ADDRS + i); /* write to external file */
                             }
 
@@ -326,7 +326,7 @@ boolean secondRound(fileObject *fileOb)
                     {
                         wordInDec = atoi(a -> name + 2);
                         /* value = register number after '*r' ,    ARE = ABSELOUTE    ,    type argument = REF_REG  ,   type add = src/dest */
-                        curInstWord = setInstArgWord(wordInDec, whichARE(a -> name), whichAddArgType(a -> name), i);
+                        curInstWord = setInstArgWord(wordInDec, whichARE(a -> name), whichAddArgType(a -> name), i ? ADD_DEST : ADD_SRC);
                     }
                     
                     /* REGISTER as argument */
@@ -334,11 +334,12 @@ boolean secondRound(fileObject *fileOb)
                     {
                         wordInDec = atoi((a -> name) + 1);
                         /* value = register number after 'r' ,    ARE = ABSELOUTE    ,    type argument = DIRECT_REG   ,  type add = src/dest */
-                        curInstWord = setInstArgWord(wordInDec, whichARE(a -> name), whichAddArgType(a -> name), i);                
+                        curInstWord = setInstArgWord(wordInDec, whichARE(a -> name), whichAddArgType(a -> name), i ? ADD_DEST : ADD_SRC);                
                     }
 
                     addInstWordToInstList(&curInstWord); /* add to instruction word list */
                 }
+                i = 0; /* reset i counter for next instruct line */
             }
 
             /* command with no arguments */
@@ -348,7 +349,7 @@ boolean secondRound(fileObject *fileOb)
                 curInstWord = setFirstInstWord(getInstructionI(pSpLine ->cmd), 0, 0, ABSOLUTE);
                 addInstWordToInstList(&curInstWord); /* add to instruction word list */         
             } 
-            i = 0;
+            
         }
     }
 
@@ -356,7 +357,9 @@ boolean secondRound(fileObject *fileOb)
     if(numOfErrors)
         return false;
     
+    /* write object file if first round and seccond round success */
     writeObject(fileOb);
+    
     /* second round success */
     return true;    
 }

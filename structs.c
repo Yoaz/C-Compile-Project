@@ -1,4 +1,9 @@
 
+                    /*** IN THIS FILE WE WILL HAVE ALL THE MAIN 
+                                DATA BASES/STRUCTURES      ***/
+
+
+
 #include "structs.h"
 
 
@@ -135,7 +140,6 @@ void printArgTabel()
       puts("\nNO ARGS IN THIS COMMAND\n");
       return;
    }
-      
 
    printf("ARGS-LIST --> ");
 	for (p = pSpLine -> argsHead; p; p = p->next)
@@ -146,15 +150,17 @@ void printArgTabel()
    
 }
 
+
 /*                                                                                                           *\
 ***************************************************************************************************************                                                                                                         
                                                 WORD STRUCTS 
 ***************************************************************************************************************
 \*                                                                                                           */
 
+
 /*********************** general **********************/
 
-/* recieve a bits char array and return the value of the word in an signed int */
+/* recieve a bits char array and return the value of the word in a signed int */
 int binCharArrToDec(char word[])
 {
    int i;
@@ -217,6 +223,7 @@ float opMemReq(char *op)
 	return 1.0; /* IMMIDIET - '#', DIRECT - 'label address' requires 1 */
 }
 
+
 /* compute how much memory (word) input instruction line requires, default is 1 as we always need at least 1 */
 float instLineMemReq()
 {
@@ -257,7 +264,7 @@ instWord *setFirstInstWord(int opCode, argAddType src, argAddType dest, ARE are)
 }
 
 
-/* creates the first instruction word in memory */
+/* creates instruction argyment word in memory */
 instWord *setInstArgWord(int value, ARE are, argAddType argType, ...)
 {
 	instWord *newWord = (instWord *)safeAlloc(sCalloc, 1, sizeof(instWord));
@@ -313,7 +320,7 @@ instWord *setInstArgWord(int value, ARE are, argAddType argType, ...)
 }
 
 
-/* will add new data word node to end of list */
+/* will add new instruction word node to end of instruction list */
 void addInstWordToInstList(instWord **newWord)
 {
    int i;
@@ -395,7 +402,7 @@ void increaseDC()
 }
 
 
-/* Creates data word node */
+/* creates data word node */
 dtWord *setDataWord(int arg)
 {
 	dtWord *newWord = (dtWord *)safeAlloc(sCalloc, 1, sizeof(dtWord));
@@ -410,7 +417,7 @@ dtWord *setDataWord(int arg)
 }
 
 
-/* will add new data word node to end of list */
+/* will add new data word node to end of data list */
 void addDtWordToDtList(dtWord **newWord)
 {
 

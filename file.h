@@ -4,14 +4,14 @@
 #include "errors.h"
 #include "structs.h" /* for word nodes in writeObject() */
 
-/* The file extentions */
+/* file extentions */
 #define SRC_ET ".as"
 #define OBJ_ET ".ob"
 #define ENT_ET ".ent"
 #define EXT_ET ".ext"
 
 
-/* The file open mode */
+/* file open mode */
 #define READ_ONLY "r"
 #define READ_WRITE "r+"
 #define WRITE_ONLY "w"
@@ -35,11 +35,11 @@ typedef struct
 ********************************************* FUNCTION PROTOTYPE **********************************************
 \*                                                                                                           */
 
+fileObject *fetchFile(char *, char *);
 void fetchLine(FILE *, char **);
+void closeFile(fileObject *);
 void writeEntry(fileObject *, char *, int);
 void writeExtern(fileObject *, char *, int);
 void writeObjectHeadLine(fileObject *, int, int);
 void writeObject(fileObject *);
 void writeDtListToObject(fileObject *);
-fileObject *fetchFile(char *, char *);
-void closeFile(fileObject *);

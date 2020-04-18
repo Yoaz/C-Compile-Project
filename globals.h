@@ -36,9 +36,6 @@ typedef enum boolean{
     true
 }boolean;
 
-/* system's available registers */
-enum registers{NULL_REG= -1, RO, R1, R2, R3, R4, R5, R6, R7};
-
 /* ARE */
 typedef enum
 {

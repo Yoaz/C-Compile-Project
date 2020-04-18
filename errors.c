@@ -1,5 +1,6 @@
 #include "errors.h"
-
+                    /*** THIS IS THE ERRORS SECTION, SYSTEM & INTERNAL  
+                                     ERROR HANDLERS               ***/
 
 /*                                                                                                           *\
 ***************************************************************************************************************                                                                                                         

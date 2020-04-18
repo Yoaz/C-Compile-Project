@@ -243,7 +243,7 @@ boolean addArgToArgList(char *arg)
 ***************************************************************************************************************
 \*                                                                                                           */
 
-
+/* compute rather a token is a legit type of label and store in splitted line global var if does */
 boolean fetchLabel(char *token)
 {
     char *lbl; /* if token is label, will hold token (label) minus the ':' at end of token */
@@ -671,7 +671,7 @@ boolean fetchArgs(char *restOfLine)
 }
 
 
-/* compute rather arg syntax is legit instrucion command arg syntax */
+/* compute rather argument syntax is legit instrucion command arg syntax */
 boolean legitInstArg(char *arg)
 {
     char *p;
@@ -937,28 +937,3 @@ ARE whichARE(char *arg)
 }
 
 
-
-/* validates rather a label declared as an argument in instruction command, exist in label table */
-boolean validateLabelAsArg(labelNode *p)
-{
-    argNode *tmp;
-    int i;
-
-    tmp = pSpLine -> argsHead;
-    i = 1;
-
-    while(tmp)
-    {
-        if(whichAddArgType(tmp -> name) == DIRECT)
-        {
-            /* look for the label in label table */
-            p = findLabel(tmp -> name);
-            if(!p) /* label doesnt exist in label tabel, but, declered in instruction command */
-                return false;
-        }
-        i++;
-        tmp = tmp -> next;
-    }
-
-    return true;        
-}

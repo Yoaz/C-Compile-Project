@@ -1,5 +1,5 @@
                     /*** THIS IS THE GLOBALS FILE, HERE WE WILL HOLD ALL PROGRAM GLOBALS
-                                           VARS AND STRUCTCS DECLARATION            ***/
+                                           	 VARS DECLARATION           		    ***/
 
 #ifndef GLOBALS_C
 #define GLOBALS_C
