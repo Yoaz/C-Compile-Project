@@ -39,6 +39,7 @@ void fetchLine(FILE *, char **);
 void writeEntry(fileObject *, char *, int);
 void writeExtern(fileObject *, char *, int);
 void writeObjectHeadLine(fileObject *, int, int);
-void writeObject(fileObject *, int, int);
+void writeObject(fileObject *);
+void writeDtListToObject(fileObject *);
 fileObject *fetchFile(char *, char *);
 void closeFile(fileObject *);

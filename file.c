@@ -181,24 +181,41 @@ void writeObjectHeadLine(fileObject *fileOb, int ic, int dc)
 
 
 /* write object file */
-void writeObject(fileObject *fileOb, int addrs, int word)
+void writeObject(fileObject *fileOb)
 {
-    unsigned int len;
+    unsigned int len, i;
     char *sNum;
+    instWord *wd;
+    int decWord;
 
-    if(word < 0) /* case of negetive number */
+    /* write to object file the headline of instructions and data count before IC reset */
+    writeObjectHeadLine(fileOb, IC, DC);
+
+    IC = STARTING_ADDRS; /* reset IC to starting address */
+
+    if(instLstHead) /* in case there are no instruction commands at all in file */
     {
-        sNum = safeAlloc(sCalloc, 1, 5); /* allocate mem for octal num in string format */
-        sprintf(sNum, "%05o", word); /* copy octal digits to string */
-        len = strlen(sNum);
-        memmove(sNum, sNum + (len - 5), 5);
-        fprintf(fileOb -> obj, "%04d\t%.05s\n", addrs++, sNum); /* print to file part of the string number */
-        free(sNum);
-        return;
+        /* no need to check if file handler of object exist as always writeObjectHeadline() called prior */
+        for(wd = instLstHead; wd; wd = wd -> next) /* run on instruction word nodes */
+        {   
+            decWord = binCharArrToDec(wd -> word);
+            i++;
+            if(decWord < 0) /* case of 'negetive' word value */
+            {
+                sNum = safeAlloc(sCalloc, 1, 5); /* allocate mem for octal num in string format */
+                sprintf(sNum, "%05o", decWord); /* copy octal digits to string */
+                len = strlen(sNum);
+                memmove(sNum, sNum + (len - 5), 5);
+                fprintf(fileOb -> obj, "%04d\t%.05s\n", IC++, sNum); /* print to file part of the string number */
+                free(sNum);
+            }
+            
+            else /* 'positive' word value */
+                fprintf(fileOb -> obj, "%04d\t%05o\n", IC++, decWord);
+        }
     }
-    
-    /* no need to check if file handler of object exist as always writeObjectHeadline() called prior */
-    fprintf(fileOb -> obj, "%04d\t%05o\n", addrs, word);
+    printf("EEEEEEEEE %d\n", i);
+    writeDtListToObject(fileOb); /* write data list to object file after end of instruction list */
 
 }
 
@@ -207,7 +224,7 @@ void writeObject(fileObject *fileOb, int addrs, int word)
 void writeDtListToObject(fileObject *fileOb)
 {
     dtWord *d;
-    unsigned int len, addrs = IC + STARTING_ADDRS;
+    unsigned int len;
     char *sNum;
 
     if(!fileOb || !dataLstHead)
@@ -221,11 +238,11 @@ void writeDtListToObject(fileObject *fileOb)
             sprintf(sNum, "%05o", binCharArrToDec(d -> word)); /* copy octal digits to string */
             len = strlen(sNum);
             memmove(sNum, sNum + (len - 5), 5);
-            fprintf(fileOb -> obj, "%04d\t%.05s\n", addrs++, sNum); /* print to file part of the string number */
+            fprintf(fileOb -> obj, "%04d\t%.05s\n", IC++, sNum); /* print to file part of the string number */
             free(sNum);
         }
 
         else
-            fprintf(fileOb -> obj, "%04d\t%05o\n", addrs++, binCharArrToDec(d -> word));
+            fprintf(fileOb -> obj, "%04d\t%05o\n", IC++, binCharArrToDec(d -> word));
     }
 }

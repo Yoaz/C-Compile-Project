@@ -280,8 +280,8 @@ instWord *setInstArgWord(int value, ARE are, argAddType argType, ...)
             newWord -> word[ind--] = mask & value ? '1' : '0';
          break;
       /* register either by ref or direct -> both the same in the manner of 3 bits for value, 3 bits for ARE */
-      case REF_REG:
       case DIRECT_REG:
+      case REF_REG:
          /* if register, either by direct or by reference, 
          * one more variable is passed to this func which is 
          * either arg type is source or destination type of arg */
@@ -306,8 +306,7 @@ instWord *setInstArgWord(int value, ARE are, argAddType argType, ...)
             for (i = 0, mask = 1; i < REG_BITS; i++, mask <<= 1) /* save reg num in bits 3-6 */
                newWord -> word[ind--] = mask & value ? '1' : '0';     
           }
-
-      newWord -> isReg = true; /* set flag register for cases of reg in src and in dest */
+          newWord -> isReg = true; /* set flag register for cases of reg in src and in dest */
    }
 
 	return newWord;
@@ -331,19 +330,20 @@ void addInstWordToInstList(instWord **newWord)
    }
 
    /* list isn't empty, check if last node is register and current new node is register as well */
-   if(instLstLast -> isReg && (*newWord) -> isReg) /* last node is a register and current new node is register */
+   if((instLstLast -> isReg) && ((*newWord) -> isReg)) /* last node is a register and current new node is register */
    {
+      printf("DDDDDDD IS REG!!!!!\n");
       /* implement 'or' bitwise on two words in order to merge words */
       for (i = 0; i < WORD_TOTAL_BITS; i++)
          if (instLstLast -> word[i] || (*newWord) -> word[i])
             instLstLast -> word[i] = '1';
-
-            free(*newWord); /* it was merge with last instruction node with list, so free */
+            instLstLast -> isReg = false;
+            free((*newWord)); /* it was merge with last instruction node with list, so free */
             return;
    }
    
    /* else not case of reg as src and as dest */
-   instLstHead -> next = *newWord; /* connect new word to the end of the list */
+   instLstLast -> next = *newWord; /* connect new word to the end of the list */
    instLstLast = *newWord; /* move last inst node list pointer to new attached node */
 
 }
