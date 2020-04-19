@@ -155,13 +155,13 @@ void printError(errorList errorTitle, ...)
         case LABEL_ENTRY_EXTERN: /* warning for use of label with .entry or .extern */
             fprintf(stderr,"--WARNING--: \"%s\" label use before .entry or .extern command\n",va_arg(ap, char *));
             break;
-        case MISSING_LBL:
+        case MISSING_LBL: /* missing label argument in .entry/.extern command */
             fprintf(stderr,"ERROR[%d,%d]: Missing label\n",numRow,numColumn);
             break; 
         case MISSING_LBL_DEF:
             fprintf(stderr,"ERROR[%d,%d]: Label: \"%s\" defined as .entry, but, missing in file definition\n",numRow,numColumn, va_arg(ap, char *));
             break;
-        case EXTERNAL_LABEL:
+        case EXTERNAL_LABEL: /* duplicate label declaration - already declared as external label */
             fprintf(stderr,"ERROR[%d,%d]: \"%s\" Label already declared as external type of label\n",numRow,numColumn,va_arg(ap, char *));
             break;
 

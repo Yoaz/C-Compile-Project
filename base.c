@@ -34,8 +34,8 @@ void initiate(char *fileName)
         }
     }
 
-    freeDtList();
-    freeInstList();
+    freeDtList(); /* free data word list */
+    freeInstList(); /* free instruction word list */
     /* default: second or first round had issues */
     printLblTabel(); /* debug */
      /*TODO: perhaps to merge one func freeAll to free all databases at end each file loop */
@@ -76,6 +76,7 @@ boolean firstRound(FILE *fp)
         /* time to parse which type of line this is */
         if(!splitLine(line)) /* compute which RELEVANT line this is and split accordingly and assign to global splited line object */
         {   
+            numOfErrors++; /* file error counter */
             resetSpLine(pSpLine); /* free global splitted line var */
             free(line);    
             continue; /* if error occur during splitLine() then errors in line */
@@ -115,7 +116,7 @@ boolean firstRound(FILE *fp)
             }
             
             /* build data word and add to data word list */
-            /* we know argsHead exist as otherwise .data without arguments would not pass splitLine parsing as illegal */
+            /* we know argsHead exist as otherwise .data without arguments would not pass splitLine parsing stages */
             for(a = pSpLine -> argsHead; a; a = a -> next) /* run on args */
             {
                 curDW = setDataWord(atoi(a -> name)); /* set new data word */
@@ -128,12 +129,12 @@ boolean firstRound(FILE *fp)
             increaseDC(); /* will increase data count depend on type of directive command */
         }
         
-        /* .data */
+        /* .string */
         else if(!strcmp(pSpLine -> cmd, DIR_STRING))
         {
             if(pSpLine -> lblFlag)
             {
-                addLabel(pSpLine -> label, L_STRING, DC);
+                addLabel(pSpLine -> label, L_STRING, DC); 
             }
 
             /* build data word and add to data word list */
@@ -190,6 +191,8 @@ boolean secondRound(fileObject *fileOb)
     instWord *curInstWord; /* temp instruction word pointer to hold current instruction word */
     char *line;
 
+    IC = 0; /* reset global insturction counter */
+
     /* As long as not end of file keep fetch lines from file */
     while(1)
     {
@@ -239,7 +242,6 @@ boolean secondRound(fileObject *fileOb)
                 
                 else /* label exist and not .external defined */
                 {
-                    /* TODO: complete file struct to hold all file * type and basic fchar *filaname */
                     writeEntry(fileOb, p -> name, p -> value); /* write to entry file */
                 }
             
@@ -260,6 +262,7 @@ boolean secondRound(fileObject *fileOb)
         /* instruction */
         else
         {
+            /* TODO: fix inst arg word translation, currently a bit off */
             if(pSpLine -> numArgs > 0) /* instruction command with arguments */
             {
                 a = pSpLine -> argsHead; /* for loop on line args */
@@ -349,7 +352,8 @@ boolean secondRound(fileObject *fileOb)
                 curInstWord = setFirstInstWord(getInstructionI(pSpLine ->cmd), 0, 0, ABSOLUTE);
                 addInstWordToInstList(&curInstWord); /* add to instruction word list */         
             } 
-            
+
+            increaseIC(); /* increase global instruction counter base on current instructin command type */
         }
     }
 

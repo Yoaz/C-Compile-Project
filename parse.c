@@ -54,7 +54,6 @@ boolean splitLine(char *line)
     if (!token) 
 	{
 		printError(MISSING_CMD);
-        numOfErrors++;
 		return false;
 	}
  
@@ -62,7 +61,6 @@ boolean splitLine(char *line)
      if(!isInstType(token) && !isDirType(token))
      {
         printError(UNDEF_CMD, token);
-        numOfErrors++;
 		return false;   
      }
     
@@ -95,7 +93,6 @@ boolean splitLine(char *line)
     {
         if(!parseData(strtok(NULL, ""))) /* parse for .data dir cmd, if errors ocurred return false */
             return false;
-        
     }
 
     else /* other operations use the normal seperator */
@@ -172,7 +169,6 @@ void resetSpLine(spLine *p)
         free(p);
     }
     
-    /*TODO: complete this reset */
 }
 
 
@@ -263,12 +259,12 @@ boolean fetchLabel(char *token)
     }
     
     free(lbl);											
-
+    
     return false;
 }
 
 
-/* Checks if a token is a label definition. */
+/* checks if a token is a label definition */
 boolean isLabel(char *token)
 {   
     if(token[strlen(token)-1] == COLON)
@@ -282,7 +278,7 @@ boolean isLabel(char *token)
 
 
 /* 
-* Checks whether the given label is a valid:
+* checks whether the given label is a valid:
 * - not a system saved world
 * - not surpass max label length limit
 * - doesnt start with numeric
@@ -302,7 +298,6 @@ boolean isLegitLabel(char *label)
                 if(!isalnum(label[i]))
                 {
                     printError(ILLEGAL_LABEL_CHARS, label);
-                    numOfErrors++;
                     return false;
                 }
             }
@@ -311,7 +306,6 @@ boolean isLegitLabel(char *label)
             if(isInstType(label))
             {
                 printError(SAVED_WORD, label);
-                numOfErrors++;
                 return false;
             }
         }
@@ -320,7 +314,6 @@ boolean isLegitLabel(char *label)
         else
         {
             printError(LABEL_NUMERIC_START, label);
-            numOfErrors++;
             return false;
         }
     }
@@ -329,7 +322,6 @@ boolean isLegitLabel(char *label)
     else
     {
         printError(LABEL_LENGTH, label);
-        numOfErrors++;
         return false;
     }
 
@@ -356,7 +348,6 @@ boolean parseData(char *restOfLine)
     /* now we'll check matching provided args count vs current command args count requirement */
     if(pSpLine -> numArgs == 0) /* quick check for unique case of 0 args from line (fetchArgs() assign this property) */
     {
-        numOfErrors++;
         printError(MISSING_DATA);
         return false;
     }
@@ -406,7 +397,6 @@ boolean parseString(char *restOfLine)
 
     if(!restOfLine) /* missing string */
     {
-        numOfErrors++;
         printError(MISSING_STRING);
         return false;
     }
@@ -436,7 +426,6 @@ boolean parseString(char *restOfLine)
         
         if((!whiteCh(*temp)) && (temp < firstQuot) && (!inString)) /* characters after .string command, but, before string declaration */
         {
-            /* TODO: send the illegal input by using firstQuot address index and pointer begining index temp */
             printError(ILLEGAL_BEFORE_STRING);
             return false;
         }
@@ -471,7 +460,6 @@ boolean parseExternEntry(char *restOfLine)
 
     if(!restOfLine) /* missing label */
     {
-        numOfErrors++;
         printError(MISSING_LBL);
         return false;
     }
@@ -480,21 +468,16 @@ boolean parseExternEntry(char *restOfLine)
 
     /* next part should be label */
     if(!isLegitLabel(token)) /* extry/entry label is illegal return false */
-    {
-        numOfErrors++;
         return false;
-    }
+
 
     /* add the arguement to the splittedLine global var */
     if(!addArgToArgList(token))
-    {
         return false;
-    }
 
     /* no more input in line (only one legit label after .entry/.extern) is allowed */
     if(token = strtok(NULL, ""))
     {
-        numOfErrors++;
         printError(EXTRA_INPUT, token);
         return false;
     }
@@ -530,7 +513,6 @@ boolean parseInst(char *restOfLine)
                 return true;
 
         /* else, rest of commands requires at least 1 args, missing arg */
-        numOfErrors++;
         printError(MISSING_ARG);
         return false;
     }
@@ -543,7 +525,7 @@ boolean parseInst(char *restOfLine)
     for(arg = pSpLine -> argsHead; arg; arg = arg -> next) /* we know there is at least 1 arg since early check case of numArgs == 0 */
     { 
         if(!legitInstArg(arg -> name) || !comptInstArg(arg -> name)) /* check legit instruction arg syntax and compitable with current command arg */
-        return false; 
+            return false;
     }
     
 
@@ -587,7 +569,6 @@ boolean fetchArgs(char *restOfLine)
 			if (restOfLine[i] == COMMA) /* There is no arg */
 			{
 				printError(ILLEGAL_ARG_SEP);
-                numOfErrors++;
 				return false;
 			}
 			else /* The start of the arg */
@@ -633,7 +614,6 @@ boolean fetchArgs(char *restOfLine)
 			else /* There is an argument before another separator */
 			{
 				printError(MISSING_ARG_SEP);
-                numOfErrors++;
 				return false;
 			}
 		}
@@ -642,7 +622,6 @@ boolean fetchArgs(char *restOfLine)
 	if(currStatus == waitForArg) /* There is a separator at the end of the line */
 	{
 		printError(ILLEGAL_ARG_SEP);
-        numOfErrors++;
 		return false;
 	}
 
@@ -687,13 +666,11 @@ boolean legitInstArg(char *arg)
         case ARG_IMMIDIET: /* imidiet? */
             if(strlen(p) < 2) /* missing number after '#' symbol */
             {
-                numOfErrors++;
                 printError(IMMIDIET_SYNTAX, p);
                 return false;
             }
             if(!isNumber(p+1)) /* after '#' must come valid number, we know strlen(p) >= 2 */
             {
-                numOfErrors++;
                 printError(IMMIDIET_SYNTAX, p);
                 return false;
             }
@@ -707,13 +684,11 @@ boolean legitInstArg(char *arg)
         case ARG_REF: /* refferenced register? */
             if(strlen(p) < 2) /* missing number after '#' symbol */
             {
-                numOfErrors++;
                 printError(INVALID_REG_REF_SYNT, p);
                 return false;
             }
             if(!isReg(p+1))
             {
-                numOfErrors++;
                 printError(INVALID_REG_REF_SYNT, p);
                 return false;
             }
@@ -725,11 +700,12 @@ boolean legitInstArg(char *arg)
             
             if(!isLegitLabel(arg)) /* label as an arg */
                 return false;
+            
+
             else
                 break; /* legit label arg */
             
             /* all other case, invalid instruction argument */
-            numOfErrors++;
             printError(INVALID_INST_ARG, p);
             return false;    
     }
@@ -749,14 +725,12 @@ boolean legitNumInstArgs()
 
     if(argsCount < pSpLine -> numArgs) /* too many arguments provided via line for this cmd */
     {
-        numOfErrors++;
         printError(TOO_MANY_ARGS);
         return false;
     }
     
     if(argsCount > pSpLine -> numArgs) /* too few arguments provided via line for this cmd */
     {
-        numOfErrors++;
         printError(TOO_FEW_ARGS);
         return false;
     }

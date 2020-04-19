@@ -125,7 +125,7 @@ void printLblTabel()
 
 	printf("\n\n\t***** Label-Table ***** \n\n");
 	for (p = lblHead; p; p = p->next)
-		printf("Name = %s \tType = %d\t Value = %li\n", p->name, p->type, p->value); /* TODO: Add p -> type, p -> value */
+		printf("Name = %s \tType = %d\t Value = %li\n", p->name, p->type, p->value); 
 	printf("\n\t*** End Of Label-Table *** \n\n\n");
 }
 
@@ -143,7 +143,7 @@ void printArgTabel()
 
    printf("ARGS-LIST --> ");
 	for (p = pSpLine -> argsHead; p; p = p->next)
-		printf("Name = %s ", p->name); /* TODO: Add p -> type, p -> value */
+		printf("Name = %s ", p->name); 
    printf("\tNum of args: %d", pSpLine -> numArgs);
    
    puts("\n");
