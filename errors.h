@@ -9,7 +9,6 @@
 
 
 extern int numRow;
-extern int numColumn;
 extern numOfErrors;
 
 

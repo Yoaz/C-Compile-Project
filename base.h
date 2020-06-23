@@ -8,7 +8,6 @@
 
 extern successFiles;
 extern numOfErrors;
-extern numColumn;
 extern numRow;
 extern IC;
 extern DC;

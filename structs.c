@@ -176,14 +176,6 @@ int binCharArrToDec(char word[])
       setBit(result, (sizeof(result) * 8) - 1);
    }
 
-   /* debug */
-   for(i=0; i <(sizeof(result) * 8); i++)
-   {
-      if(checkBit(result,i))
-         printf("-%d", i);
-   }
-   printf("\n");
-
    return result;
 }
 
@@ -214,12 +206,8 @@ void increaseIC()
 float opMemReq(char *op)
 {
 	if(whichAddArgType(op) == DIRECT_REG || whichAddArgType(op) == REF_REG) /* DIRECT_REG - 'r0-7', REF_REG '*r0-7' type */
-   {
-      printf("this arg requires 0.5\n"); /* debug */
-      return 0.5; /* debug */
-   }
+      return 0.5; 
 
-   printf("this arg requires 1.0\n");
 	return 1.0; /* IMMIDIET - '#', DIRECT - 'label address' requires 1 */
 }
 
@@ -235,8 +223,6 @@ float instLineMemReq()
 
    for(p = pSpLine -> argsHead; p; p = p -> next) /* Run on the args, max run is 2 as max args for instruction is 2 */
 			wordsCnt += opMemReq(p -> name); /* sum the words required based on arguments from line */
-
-   printf("This Instruction requires: %f memory slots\n", wordsCnt); /* debug */
 
    return wordsCnt;
 }
@@ -339,7 +325,7 @@ void addInstWordToInstList(instWord **newWord)
    /* list isn't empty, check if last node is register and current new node is register as well */
    if((instLstLast -> isReg) && ((*newWord) -> isReg)) /* last node is a register and current new node is register */
    {
-      printf("DDDDDDD IS REG!!!!!\n");
+
       /* implement 'or' bitwise on two words in order to merge words */
       for (i = 0; i < WORD_TOTAL_BITS; i++)
          if (instLstLast -> word[i] || (*newWord) -> word[i])

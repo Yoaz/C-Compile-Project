@@ -74,28 +74,6 @@ typedef enum
 	L_EXTERNAL
 } labelType;
 
-/* enum for different instruction commands */
-typedef enum
-{
-	UNDEFINED_CMD = -1,
-	MOV = 0000,
-	CMP = 0001,
-	ADD = 0010,
-	SUB = 0011,
-	LEA = 0100,
-	CLRL = 0101,
-	NOT = 0110,
-	INC = 0111,
-	DEC = 1000,
-	JMP = 1001,
-	BNE = 1010, 
-	RED = 1011,
-	PRN = 1100,
-	JSR = 1101,
-	RTS = 1110,
-	STOP = 1111
-} cmdType;
-
 /* define struct to hold instrucions and their accpeted args */
 struct instructions
 {
@@ -122,9 +100,6 @@ typedef struct
 
 /* pointer to split line object */
 spLine *pSpLine;
-
-
-
 
 
 #endif

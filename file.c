@@ -60,8 +60,8 @@ void closeFile(fileObject *fileOb)
 }
 
 /* the function read char by char from file and assign to line when \n occur
-* this funcion will 'on the fly' avoid extra white chars from input, and replace with since space char, as long
-as input isnt part of .string " " string, for ex: (SPACE X 4)\t AB:\t\t\t .data -> will turn into: AB: .data with one
+* this funcion will 'on the fly' avoid extra white chars from input, and replace with single space char, as long
+* as input isnt part of .string " " string, for ex: (SPACE X 4)\t AB:\t\t\t .data -> will turn into: AB: .data with one
 * SPACE char in between 2 words that originally inputted with white tabs in between */
 void fetchLine(FILE *fd, char **line)
 {
@@ -214,7 +214,7 @@ void writeObject(fileObject *fileOb)
                 fprintf(fileOb -> obj, "%04d\t%05o\n", IC++, decWord);
         }
     }
-    printf("EEEEEEEEE %d\n", i);
+    
     writeDtListToObject(fileOb); /* write data list to object file after end of instruction list */
 
 }

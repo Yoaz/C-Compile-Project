@@ -26,13 +26,11 @@ boolean splitLine(char *line)
 
     pSpLine = (spLine *)safeAlloc(sCalloc, 1, sizeof(spLine)); /* assign memory to global splitted line var */
 
-    printf("REACHED SPLIT LINE: %s\n", line); /* debug */
 
     /* start reading first token from line with space delim, as we are fetching raw line from file using 
     * fetchLine(), but, while 'avoiding unecesery legal input extra white tabs' and make sure only one space is
     * preserved between every two parts of string that were originally typed with one or more white tabs */
     token = strtok(line, TOKEN_DELIM); 
-    printf("This is the 1st token: %s, in size: %d \n", token, strlen(token)); /* debug */
    
     /* check if line starts with label and store in label field in splittedLine global var if does,
     * otherwise prints relevant error if label is illegal or continue if line doesnt start with label */
@@ -67,7 +65,6 @@ boolean splitLine(char *line)
     /* token is legit system command, store in global split line */
     pSpLine -> cmd = (char *)safeAlloc(sCalloc, strlen(token)+1, sizeof(char)); /* +1 for '\0' */
     strcpy(pSpLine -> cmd, token);
-    printf("This is the cmd: %s, in size: %d \n", pSpLine -> cmd, strlen(pSpLine -> cmd)); /* debug */
 
     
     /*
@@ -101,9 +98,6 @@ boolean splitLine(char *line)
             return false;
     }
 
-    /* debug */
-    if(pSpLine -> argsHead)
-        printArgTabel();
 
     return true;
 }
@@ -114,18 +108,13 @@ boolean relevantToParse(char *line)
 {
 	char *p; 
 
-	if (!line || *line == COMMENT_SIGN || *line == LINE_BREAK || !strlen(line)){ /* ignore undefined/comments/empty lines */
-        printf("IGNORED LINE: %s\n", line); /* debug */
+	if (!line || *line == COMMENT_SIGN || *line == LINE_BREAK || !strlen(line)) /* ignore undefined/comments/empty lines */
         return false;
-    }
 
 	for (p = line; p<p + strlen(line); p++)
     {
 		if (!isspace(*p)) /* The line isn't empty */
-        {
-            printf("DIDN'T IGNORE LINE: %s\n", line); /* debug */
 			return true;     
-        } 
     }
     
 	return false;
@@ -253,7 +242,6 @@ boolean fetchLabel(char *token)
         /* copy the label name to the global splitted line label field */
         pSpLine -> label = (char *)safeAlloc(sMalloc, strlen(lbl)); /* strlen(token) includes ':' at end */															
         strncpy(pSpLine -> label, lbl, strlen(lbl)); /* -1 to remove COLON ':' char from input label */	
-        printf("This is the stored label: %s \n", pSpLine -> label);
         free(lbl); 
         return true;
     }
@@ -268,10 +256,7 @@ boolean fetchLabel(char *token)
 boolean isLabel(char *token)
 {   
     if(token[strlen(token)-1] == COLON)
-    {
-        printf("This is a label: %s\n", token);
         return true;
-    }
 	
     return false;
 }
@@ -748,8 +733,6 @@ int instArgsCount(int instInd)
 		if(ICS[instInd].addType[i][0] != NULL_METHOD)
 			count++;
 
-    printf("This command requires %d args.\n", count); /* debug */
-
 	return count;
 }
 
@@ -763,10 +746,7 @@ int getInstructionI(char *cmd)
     for(i = 0; i < NUM_ARGS_ADRS; i++)
     {
         if(!strcmp(ICS[i].cmd, cmd))
-        {
-            printf("This is the command index %d\n", i); /* debug */
             return i;
-        }
     }
     
     return -1; /* no such instruction command, safety major */

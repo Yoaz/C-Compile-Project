@@ -15,13 +15,12 @@ void initiate(char *fileName)
         return;
 
     /* Debug */
-    printf("Open file: \"%s.as\"\n", fileOb -> rawName); 
+    printf("\n\tOpen file: \"%s.as\"\n", fileOb -> rawName); 
 
     /* Runs the first pass on the source file */
 	if(firstRound(fileOb -> src)) /* first round was successful */
 	{
         updateLblTable(); /* update label table with starting address (100) and .data/.string with sum IC */
-        printLblTabel(); /* debug */
 
         if(secondRound(fileOb)) /* second round was success */
         { 
@@ -29,16 +28,16 @@ void initiate(char *fileName)
             printLblTabel(); /* debug */
             freeDtList();
             freeInstList();
-            closeFile(fileOb);
+            closeFile(fileOb); /* close all files streams */
             return; /* next file if exist */
         }
     }
 
     freeDtList(); /* free data word list */
     freeInstList(); /* free instruction word list */
+
     /* default: second or first round had issues */
-    printLblTabel(); /* debug */
-     /*TODO: perhaps to merge one func freeAll to free all databases at end each file loop */
+    /*TODO: perhaps to merge one func freeAll to free all databases at end each file loop */
     closeFile(fileOb);
     return; /* do not update symbol table nor go for second round on file */
 }
@@ -49,7 +48,7 @@ void initiate(char *fileName)
 boolean firstRound(FILE *fp)
 {
     char *line;
-    IC=0, DC=0, numOfErrors = 0, numColumn = 0; /* reset global vars */
+    IC=0, DC=0, numOfErrors = 0; /* reset global vars */
     argNode *a; /* to run on args */
     dtWord *curDW; /* to write data word node for .data, .string legit commands */
     char *tmp; /* to run on .string string argument chars */
@@ -64,11 +63,10 @@ boolean firstRound(FILE *fp)
         fetchLine(fp, &line);
 
         numRow++; /* global counter for current row num in current file */
+
         
-        /* Debug */
-        printf("\n%s-> size of line: %d\n", line, strlen(line));
-        
-        if(!relevantToParse(line)){ /* if line not relevant to parse (maybe undefined, empty, comment etc), skip */
+        if(!relevantToParse(line)) /* if line not relevant to parse (maybe undefined, empty, comment etc), skip */
+        {
             free(line);
             continue;
         }
@@ -121,8 +119,6 @@ boolean firstRound(FILE *fp)
             {
                 curDW = setDataWord(atoi(a -> name)); /* set new data word */
                 addDtWordToDtList(&curDW);  /* add to data word to data word list */
-                printWord(curDW); /* debug */
-                printf("The word in decimal: %d\n", binCharArrToDec(curDW -> word)); /* debug */
                 curDW = NULL; 
             }
 
@@ -143,14 +139,11 @@ boolean firstRound(FILE *fp)
             {
                 curDW = setDataWord(*tmp); /* set new data word */
                 addDtWordToDtList(&curDW);  /* add to data word to data word list */
-                printWord(curDW); /* debug */
-                printf("The word in char: %c\n", binCharArrToDec(curDW -> word)); /* debug */
             }
+
             /* set end of string '/0' data word node to data word list */
             curDW = setDataWord(STRING_END); /* set new data word */
             addDtWordToDtList(&curDW);  /* add to data word to data word list */
-            printWord(curDW); /* debug */
-            printf("The word in char: %c\n", binCharArrToDec(curDW -> word)); /* debug */
 
             curDW = NULL; 
 
@@ -203,9 +196,6 @@ boolean secondRound(fileObject *fileOb)
         fetchLine(fileOb -> src, &line);
 
         numRow++; /* global counter for current row num in current file */
-        
-        /* Debug */
-        printf("\n%s-> size of line: %d\n", line, strlen(line));
         
         if(!relevantToParse(line)) /* if line not relevant to parse (maybe undefined, empty, comment etc), skip */
         {
@@ -376,7 +366,6 @@ void resetGlobals()
     freeLblTable();
     IC = 0;
     DC = 0;
-    numColumn = 0;
     numRow = 0;
     numOfErrors = 0;
 }
